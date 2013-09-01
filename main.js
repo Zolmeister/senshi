@@ -13,7 +13,8 @@ image.onload = initialize
 ctx.webkitImageSmoothingEnabled = false
 ctx.mozImageSmoothingEnabled = false
 ctx.translate(canvas.width/2, canvas.height/2)
-ctx.scale(4, 4)
+//ctx.scale(4, 4)
+ctx.scale(3,3)
 
 socket.on('taken', taken)
 // on id, set id for user tracking purposes
@@ -91,6 +92,10 @@ function draw() {
     var player = players[i]
     if(player.id == id) me = player
   }
+  
+  //draw terrain
+  drawTerrain(me.x, me.y)
+  
   //ctx.save()
   //ctx.translate(canvas.width/2, canvas.height/2)
   for(var i=0;i<players.length;i++) {
@@ -101,11 +106,24 @@ function draw() {
   }
 }
 
+function drawTerrain(offsetX, offsetY) {
+  
+  for(var y=-canvas.height/2;y<canvas.height/2;y+=14) {
+    for(var x=-canvas.width/2;x<canvas.width/2;x+=14) {
+      var row = 0
+      var col = 2
+      if(x%3==0 && x*3%4==0 && y/2%6==0 && y%3==0) row=1
+      ctx.drawImage(image, image.width - col*14, row*14, 14, 14, x-offsetX, y-offsetY, 14, 14)
+    }
+  }
+}
+
 function drawPlayer(x, y, name, health, dir, frame) {
   
   // 22 x 20, with +10 x-offset
   var row = dir == 0 ? 1 : dir-1
   var col = frame == 3 ? 1 : frame
+  col=col+7*3
   x+=10
   
   // draw name
