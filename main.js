@@ -110,7 +110,7 @@ function drawPlayer(x, y, dir, frame) {
   if(dir==0) {
     ctx.translate(44, 0)
     ctx.scale(-1,1)
-    //x-=20
+    x = 22-x
   }
   ctx.fillRect(x,y,22,20)
   ctx.drawImage(image, col*22, row*20, 22, 20, x, y, 22, 20)
