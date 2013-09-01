@@ -109,6 +109,7 @@ function drawPlayer(x, y, name, health, dir, frame) {
   x+=10
   
   // draw name
+  ctx.fillStyle = '#fff'
   ctx.font = '4px sans'
   ctx.fillText(name, (x - name.length+11), y-2)
   
@@ -125,7 +126,7 @@ function drawPlayer(x, y, name, health, dir, frame) {
     x = 22-x
   }
   ctx.fillStyle='#fff'
-  ctx.fillRect(x,y,22,20)
+  //ctx.fillRect(x,y,22,20)
   
   //draw character
   ctx.drawImage(image, col*22, row*20, 22, 20, x, y, 22, 20)

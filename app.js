@@ -68,6 +68,9 @@ io.sockets.on('connection', function (socket) {
     this.x = Math.floor(Math.random() * 300) + 50
     this.y = Math.floor(Math.random() * 100) + 50
     this.health = 75
+    
+    // weapons: fists, machete, bow, gun - [0, 1, 2, 3]
+    this.weapon = 0
 
     // directions: left, up, right, down - 0, 1, 2, 3
     this.dir = 3
@@ -93,6 +96,7 @@ function physics(frame) {
     40: [0, 1], // down
   }
   
+  // player movement
   for (var i = 0; i < players.length; i++) {
     var player = players[i]
     var key = player.key
@@ -103,6 +107,17 @@ function physics(frame) {
           player.frame++
           player.attacking = (player.attacking + 1) % 5
         } else if(player.frame == 4){
+          // here is where we check for hit (if melee weapon)
+          if(player.weapon < 2) {
+            var weapon = {
+              x: player.x+keymap[player.dir+37][0]*5,
+              y: player.y+keymap[player.dir+37][1]*5
+            }
+            var hit = collide(weapon, players.slice(0,i).concat(players.slice(i+1)))
+            if(hit) {
+              hit.health -= 10
+            }
+          }
           player.frame++
           player.attacking = (player.attacking + 1) % 5
         } else {
@@ -117,12 +132,36 @@ function physics(frame) {
         }
         player.x += keymap[key][0]
         player.y += keymap[key][1]
+        if(collide(player, players.slice(0,i).concat(players.slice(i+1)))){
+          player.x -= keymap[key][0]
+          player.y -= keymap[key][1]
+        }
         player.dir = key - 37
       } else {
         player.frame = 1
       }
     }
   }
+  // player deaths
+  for (var i = players.length-1; i >=0 ; i--) {
+    var player = players[i]
+    if (player.health <= 0) {
+      players.splice(i,1)
+    }
+  }
+  // bullet movement
+}
+var pHeight = 18
+var pWidth = 12
+function collide(a, bs) {
+  for(var i=0;i<bs.length;i++) {
+    var b = bs[i]
+    if(!(a.y + pHeight < b.y
+     || a.y > b.y + pHeight
+     || a.x + pWidth < b.x
+     || a.x > b.x + pWidth)) return b
+  }
+  return false
 }
 
 var frame = 0
