@@ -67,6 +67,7 @@ io.sockets.on('connection', function (socket) {
     this.id = id
     this.x = Math.floor(Math.random() * 300) + 50
     this.y = Math.floor(Math.random() * 100) + 50
+    this.health = 75
 
     // directions: left, up, right, down - 0, 1, 2, 3
     this.dir = 3

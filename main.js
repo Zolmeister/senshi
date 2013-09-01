@@ -96,25 +96,41 @@ function draw() {
   for(var i=0;i<players.length;i++) {
     var player = players[i]
     // draw player
-    drawPlayer(player.x - me.x, player.y - me.y, player.dir, player.frame)
+    drawPlayer(player.x - me.x, player.y - me.y, player.name, player.health, player.dir, player.frame)
     //ctx.fillRect((player.x - me.x), (player.y - me.y), 10, 10)
   }
 }
 
-function drawPlayer(x, y, dir, frame) {
-  // 22 x 20, with some x-offset
+function drawPlayer(x, y, name, health, dir, frame) {
+  
+  // 22 x 20, with +10 x-offset
   var row = dir == 0 ? 1 : dir-1
   var col = frame == 3 ? 1 : frame
   x+=10
+  
+  // draw name
+  ctx.font = '4px sans'
+  ctx.fillText(name, (x - name.length+11), y-2)
+  
+  // draw health bar
+  ctx.fillStyle='#3a3'
+  ctx.fillRect(x+1, y-1, health/5, 1)
+  ctx.fillStyle='#a33'
+  ctx.fillRect(x+1+health/5, y-1, 100/5-health/5, 1)
+  
   ctx.save()
   if(dir==0) {
     ctx.translate(44, 0)
     ctx.scale(-1,1)
     x = 22-x
   }
+  ctx.fillStyle='#fff'
   ctx.fillRect(x,y,22,20)
+  
+  //draw character
   ctx.drawImage(image, col*22, row*20, 22, 20, x, y, 22, 20)
   ctx.restore()
+  
 }
 
 function gameState(state) {
