@@ -13,8 +13,8 @@ image.onload = initialize
 ctx.webkitImageSmoothingEnabled = false
 ctx.mozImageSmoothingEnabled = false
 ctx.translate(canvas.width/2, canvas.height/2)
-//ctx.scale(4, 4)
-ctx.scale(3,3)
+ctx.scale(4, 4)
+//ctx.scale(2,2)
 
 socket.on('taken', taken)
 // on id, set id for user tracking purposes
@@ -106,16 +106,69 @@ function draw() {
   }
 }
 
-function drawTerrain(offsetX, offsetY) {
-  
+
+var random = (function rng() {
+  var x = 123456789,
+    y = 362436069,
+    z = 521288629,
+    w = 88675123,
+    t;
+  return function rand() {
+    t = x ^ (x << 11)
+    x = y; y = z; z = w;
+    w = w ^ (w >> 19) ^ (t ^ (t >> 8));
+    return (w * 2.3283064365386963e-10)*2;
+  }
+})()
+
+var map=(function generateMap(){
+  var m = []
   for(var y=-canvas.height/2;y<canvas.height/2;y+=14) {
+    var temp = []
     for(var x=-canvas.width/2;x<canvas.width/2;x+=14) {
-      var row = 0
-      var col = 2
+      var rand = random()
+      if(rand>0.99) {
+        temp.push(3)
+      } else if (rand>0.95) {
+        temp.push(2)
+      } else if(rand>0.8) {
+        temp.push(1)
+      } else {
+        temp.push(0)
+      }
+    }
+    m.push(temp)
+  }
+  return m
+})()
+
+function drawTerrain(offsetX, offsetY) {
+  var row = 0
+  var col = 2
+
+  for(var y = -canvas.height/2;y<canvas.height/2;y+=14) {
+    for(var x = -canvas.width/2;x<canvas.width/2;x+=14) {
+      //if(map[(y+300)/14]+1 && map[(y+300)/14][(x+400)/14]+1)
+      //if(x-offsetX<-canvas.width/4/2 || x+offsetX>canvas.width/4/2 ||
+      //   y-offsetY<-canvas.height/4/2 || y+offsetY>canvas.height/4/2)
+      if(x-offsetX+14 < -canvas.width/4/2 || 
+         y-offsetY+14 < -canvas.height/4/2 || 
+         y-offsetY > canvas.height/4/2 ||
+         y-offsetY > canvas.height/4/2) continue
+      ctx.drawImage(image, image.width - col*14, map[(y+300)/14][(x+400)/14]*14, 14, 14, x-offsetX, y-offsetY, 14, 14)
+      //break
+    }
+    //break
+  }
+  
+  /*for(var y=-canvas.height/2;y<canvas.height/2;y+=14) {
+    for(var x=-canvas.width/2;x<canvas.width/2;x+=14) {
+      
       if(x%3==0 && x*3%4==0 && y/2%6==0 && y%3==0) row=1
+      if(x%4==0 && y%5==0 && x/2%4==0) row=2
       ctx.drawImage(image, image.width - col*14, row*14, 14, 14, x-offsetX, y-offsetY, 14, 14)
     }
-  }
+  }*/
 }
 
 function drawPlayer(x, y, name, health, dir, frame) {

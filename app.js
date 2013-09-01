@@ -132,7 +132,7 @@ function physics(frame) {
         }
         player.x += keymap[key][0]
         player.y += keymap[key][1]
-        if(player.x<-400 || player.x>400 || player.y<-300 || player.y>300 || collide(player, players.slice(0,i).concat(players.slice(i+1)))){
+        if(player.x<-400 || player.x>(400-16) || player.y<-300 || player.y>(300-18) || collide(player, players.slice(0,i).concat(players.slice(i+1)))){
           player.x -= keymap[key][0]
           player.y -= keymap[key][1]
         }
