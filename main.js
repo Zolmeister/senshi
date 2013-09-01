@@ -6,8 +6,14 @@ canvas.width = 800
 canvas.height = 600
 ctx = canvas.getContext('2d')
 
+image = new Image()
+image.src = 'player.png'
+image.onload = initialize
+
+ctx.webkitImageSmoothingEnabled = false
+ctx.mozImageSmoothingEnabled = false
 ctx.translate(canvas.width/2, canvas.height/2)
-ctx.scale(2, 2)
+ctx.scale(4, 4)
 
 socket.on('taken', taken)
 // on id, set id for user tracking purposes
@@ -21,22 +27,14 @@ socket.on('dead', drawInstructions)
 socket.on('state', gameState)
 
 // on keypress, send command to server
-var keymap = {
-  38: 'u',
-  39: 'r',
-  40: 'd',
-  37: 'l',
-  32: 'a',
-  90: 'a'
-}
+// left, up, right, down, space, z
+var keys=[37, 38, 39, 40, 32, 90]
 window.onkeydown = function(e) {
-  keymap[e.which] && socket.emit('keydown', e.which)
+  keys.indexOf(e.which)!=-1 && socket.emit('keydown', e.which)
 }
 window.onkeyup = function(e) {
-  keymap[e.which] && socket.emit('keyup', e.which)
+  keys.slice(0,4).indexOf(e.which)!=-1 && socket.emit('keyup', e.which)
 }
-
-initialize()
 
 // start by drawing instructions (+ name inputs over canvas?)
 function drawInstructions() {
@@ -98,8 +96,25 @@ function draw() {
   for(var i=0;i<players.length;i++) {
     var player = players[i]
     // draw player
-    ctx.fillRect((player.x - me.x), (player.y - me.y), 10, 10)
+    drawPlayer(player.x - me.x, player.y - me.y, player.dir, player.frame)
+    //ctx.fillRect((player.x - me.x), (player.y - me.y), 10, 10)
   }
+}
+
+function drawPlayer(x, y, dir, frame) {
+  // 22 x 20, with some x-offset
+  var row = dir == 0 ? 1 : dir-1
+  var col = frame == 3 ? 1 : frame
+  x+=10
+  ctx.save()
+  if(dir==0) {
+    ctx.translate(44, 0)
+    ctx.scale(-1,1)
+    //x-=20
+  }
+  ctx.fillRect(x,y,22,20)
+  ctx.drawImage(image, col*22, row*20, 22, 20, x, y, 22, 20)
+  ctx.restore()
 }
 
 function gameState(state) {
