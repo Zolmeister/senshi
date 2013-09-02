@@ -24,7 +24,7 @@ io.sockets.on('connection', function (socket) {
 
   // on socket connect, start streaming game data to them
   socket.emit('setItems', items)
-  
+
   // socket join game (gives name), adds them to arena
   socket.on('join', function (name) {
     name = name.substr(0, 17)
@@ -36,6 +36,7 @@ io.sockets.on('connection', function (socket) {
       p = new Player(name, socket.id)
       arena.players.push(p)
       socket.emit('id', socket.id)
+      socket.emit('highScores', highScores.slice(0,10))
       return
     }
     socket.emit('taken', name)
@@ -43,28 +44,31 @@ io.sockets.on('connection', function (socket) {
 
   // on socket disconnect, kill them
   socket.on('disconnect', function () {
-    if(p) p.health = 0
+    if (p) p.health = 0
   })
 
   // on socket command (movement/attack), update game state
   socket.on('keydown', function (key) {
+    if(!p) return
+    
     if (key == 32 || key == 90) return p.attacking = 1
-    if(key > 36 && key < 41) {
-      
+    if (key > 36 && key < 41) {
+
       // remove key if was in list before
-      if(p.keys.indexOf(key) != -1) p.keys.splice(p.keys.indexOf(key), 1)
-      
+      if (p.keys.indexOf(key) != -1) p.keys.splice(p.keys.indexOf(key), 1)
+
       // set key to first position
       p.keys.unshift(key)
     }
   })
   socket.on('keyup', function (key) {
+    if(!p) return
     p.keys.splice(p.keys.indexOf(key), 1)
   })
-  
+
   // chat
-  socket.on('chat', function(msg) {
-    io.sockets.emit('chat', (p && p.name || '☠')+': '+msg)
+  socket.on('chat', function (msg) {
+    io.sockets.emit('chat', (p && p.name || '☠') + ': ' + msg)
   })
 });
 
@@ -72,13 +76,16 @@ io.sockets.on('connection', function (socket) {
 //game
 var arena = {
   players: [],
-  bullets: [],
-  highScores: []
+  bullets: []
 };
+var highScores = [];
 
 // stub 10 high scores
-for(var i=0;i<10;i++) {
-  arena.highScores.push({name:'', score:''})
+for (var i = 0; i < 10; i++) {
+  highScores.push({
+    name: '',
+    score: ''
+  })
 }
 
 function Player(name, id) {
@@ -100,8 +107,8 @@ function Player(name, id) {
 
   this.keys = []
   this.attacking = 0
-  
-  while(collide(this, arena.players)) {
+
+  while (collide(this, arena.players)) {
     this.x = Math.floor(Math.random() * 300) + 50
     this.y = Math.floor(Math.random() * 100) + 50
   }
@@ -200,7 +207,7 @@ function physics(frame) {
             var hit = collide(weapon, players.slice(0, i).concat(players.slice(i + 1)))
             if (hit) {
               hit.health -= 10
-              if(hit.health<=0) {
+              if (hit.health <= 0) {
                 player.kills++
               }
             }
@@ -238,40 +245,24 @@ function physics(frame) {
     bullet.x += keymap[bullet.dir][0] * 2
     bullet.y += keymap[bullet.dir][1] * 2
     var player = collide(bullet, players)
-    if (player && bullet.shooter!=player.id) {
+    if (player && bullet.shooter != player.id) {
       // arrow does 10 dmg, bullet does 20
       player.health -= bullet.type == 0 ? 10 : 20
-      if(player.health <= 0) {
+      if (player.health <= 0) {
         var id = bullet.shooter
-        for(var i=0;i<players.length;i++) {
-          if(players[i].id==id) {
+        for (var i = 0; i < players.length; i++) {
+          if (players[i].id == id) {
             players[i].kills++
             break
           }
         }
       }
       bullets.splice(i, 1)
-    } else if(bullet.x<-400 || bullet.x>400 || bullet.y<-300 || bullet.y>300){
+    } else if (bullet.x < -400 || bullet.x > 400 || bullet.y < -300 || bullet.y > 300) {
       bullets.splice(i, 1)
     }
   }
-
-  // player deaths
-  for (var i = players.length - 1; i >= 0; i--) {
-    var player = players[i]
-    if (player.health <= 0) {
-      // drop weapon
-      if(player.weapon!=-1) {
-        var item = {id:player.weapon, x: player.x, y: player.y}
-        items.push(item)
-        io.sockets.emit('item', {index: items.length-1, val: item})
-      }
-      // anounce death
-      io.sockets.emit('alert', player.name+' has been killed')
-      players.splice(i, 1)
-    }
-  }
-
+  
   // player pickup items
   for (var i = items.length - 1; i >= 0; i--) {
     var item = items[i]
@@ -307,18 +298,43 @@ function physics(frame) {
       }
     }
   }
-  
-  // update high scores
-  for(var i=0;i<players.length;i++) {
-    var highScores = arena.highScores
-    var ind = 0
-    var player = players[0]
-    while(ind<highScores.length && highScores[ind].score > player.kills*1000) {
-      ind++
+
+  // player deaths
+  for (var i = players.length - 1; i >= 0; i--) {
+    var player = players[i]
+    if(!player){
+      console.log('undef?', player, i)
+      console.log(players)
     }
-    if(ind < highScores.length) {
-      highScores.splice(ind, 0, {name: player.name, score: player.kills*1000})
-      highScores.pop()
+    if (player.health <= 0) {
+      // drop weapon
+      if (player.weapon != -1) {
+        var item = {
+          id: player.weapon,
+          x: player.x,
+          y: player.y
+        }
+        items.push(item)
+        io.sockets.emit('item', {
+          index: items.length - 1,
+          val: item
+        })
+      }
+      // anounce death
+      io.sockets.emit('alert', player.name + ' has been killed')
+
+      // update high scores
+      // TODO - only send if top 10 change
+      highScores.push({name: player.name, score: player.kills*1000})
+      
+      highScores.sort(function(a, b) {
+        return a.score - b.score
+      }).reverse()
+      
+      // send high score list
+      io.sockets.emit('highScores', highScores.slice(0,10))
+
+      players.splice(i, 1)
     }
   }
 }

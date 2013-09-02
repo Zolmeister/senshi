@@ -30,8 +30,8 @@ socket.on('state', gameState)
 // on item diff data, update item list
 socket.on('item', function (diff) {
   console.log('got item diff', diff)
-  if(diff.del) {
-    items.splice(diff.index,1)
+  if (diff.del) {
+    items.splice(diff.index, 1)
   } else {
     items[diff.index] = diff.val
   }
@@ -39,20 +39,32 @@ socket.on('item', function (diff) {
 
 var items = []
 var alerts = []
-socket.on('setItems', function(serverItems) {
+socket.on('setItems', function (serverItems) {
   items = serverItems
 })
+socket.on('highScores', function (scores) {
+  console.log(scores)
+  var $s = $('#scores')
+  $s.innerHTML = '<h3>Top 10</h3>'
 
+  // This is sage because names are guarenteed to only be letters
+  for (var i = 0; i < scores.length; i++) {
+    $s.innerHTML += '<h5>' + scores[i].name + ' ' + scores[i].score + '</h5>'
+  }
+})
 socket.on('alert', function alert(msg) {
   // split alert string into many msgs
-  while(msg) {
-    var m = msg.substr(0,27)
+  while (msg) {
+    var m = msg.substr(0, 27)
     msg = msg.substring(27)
-    alerts.push({msg:m, time: 200})
+    alerts.push({
+      msg: m,
+      time: 200
+    })
   }
 })
 
-socket.on('chat', function(msg) {
+socket.on('chat', function (msg) {
   var c = $('#chatBox')
   c.innerHTML = c.innerHTML.replace(/<br>/g, '\n')
   c.textContent += msg + '\n'
@@ -136,14 +148,14 @@ function draw() {
     var player = players[i]
     if (player.id == id) me = player
   }
-  if(!me) return
+  if (!me) return
 
   //draw terrain
   drawTerrain(me.x, me.y)
 
   // draw items
   drawItems(me.x, me.y)
-  
+
   //draw bullets
   drawBullets(me.x, me.y)
 
@@ -155,21 +167,21 @@ function draw() {
     drawPlayer(player.x - me.x - 11, player.y - me.y - 5, player.name, player.health, player.dir, player.frame, player.weapon, player.kills)
     //ctx.fillRect((player.x - me.x), (player.y - me.y), 10, 10)
   }
-  
+
   drawAlerts()
 }
 
 function drawAlerts() {
-  for(var i=alerts.length-1; i>=0;i--) {
+  for (var i = alerts.length - 1; i >= 0; i--) {
     var alert = alerts[i]
     alert.time--
-    if(alert.time<=0){
-      alerts.splice(i,1)
+    if (alert.time <= 0) {
+      alerts.splice(i, 1)
       continue
     }
     ctx.font = '5px sans'
     ctx.fillStyle = '#faa'
-    ctx.fillText(alert.msg, (400 - 300)/4, (-300+30+5*4*i)/4)
+    ctx.fillText(alert.msg, (400 - 300) / 4, (-300 + 30 + 5 * 4 * i) / 4)
   }
 }
 
@@ -210,86 +222,86 @@ var map = (function generateMap() {
   return m
 })()
 
-function drawTerrain(offsetX, offsetY) {
-  var row = 0
-  var col = 2
+  function drawTerrain(offsetX, offsetY) {
+    var row = 0
+    var col = 2
 
-  for (var y = -canvas.height / 2; y < canvas.height / 2; y += 14) {
-    for (var x = -canvas.width / 2; x < canvas.width / 2; x += 14) {
-      if (x - offsetX + 14 < -canvas.width / 4 / 2 || y - offsetY + 14 < -canvas.height / 4 / 2 || x - offsetX > canvas.width / 4 / 2 || y - offsetY > canvas.height / 4 / 2) continue
-      ctx.drawImage(image, image.width - col * 14, map[(y + canvas.height / 2) / 14][(x + canvas.width / 2) / 14] * 14, 14, 14, x - offsetX, y - offsetY, 14, 14)
+    for (var y = -canvas.height / 2; y < canvas.height / 2; y += 14) {
+      for (var x = -canvas.width / 2; x < canvas.width / 2; x += 14) {
+        if (x - offsetX + 14 < -canvas.width / 4 / 2 || y - offsetY + 14 < -canvas.height / 4 / 2 || x - offsetX > canvas.width / 4 / 2 || y - offsetY > canvas.height / 4 / 2) continue
+        ctx.drawImage(image, image.width - col * 14, map[(y + canvas.height / 2) / 14][(x + canvas.width / 2) / 14] * 14, 14, 14, x - offsetX, y - offsetY, 14, 14)
+      }
     }
   }
-}
 
-function drawItems(offsetX, offsetY) {
-  var row = 0
-  var col = 1
-  for (var i = 0; i < items.length; i++) {
-    var item = items[i]
-    if (item.x - offsetX + 14 < -canvas.width / 4 / 2 || item.y - offsetY + 14 < -canvas.height / 4 / 2 || item.x - offsetX > canvas.width / 4 / 2 || item.y - offsetY > canvas.height / 4 / 2) continue
-    ctx.drawImage(image, image.width - col * 14, item.id * 14, 14, 14, item.x - offsetX, item.y - offsetY, 14, 14)
-  }
-}
-
-function drawBullets(offsetX, offsetY) {
-  var bullets = arena.bullets
-  
-  var row = 3
-  var col = 1
-  for (var i = 0; i < bullets.length; i++) {
-    var bullet = bullets[i]
-    if (bullet.x - offsetX + 14 < -canvas.width / 4 / 2 || bullet.y - offsetY + 14 < -canvas.height / 4 / 2 || bullet.x - offsetX > canvas.width / 4 / 2 || bullet.y - offsetY > canvas.height / 4 / 2) continue
-    if(bullet.type==0){
-      ctx.save()
-      ctx.translate(bullet.x - offsetX + 7, bullet.y - offsetY + 7)
-      // left, up, right, down - 0, 1, 2, 3
-      var rotate = [1, -.5, 0, .5]
-      ctx.rotate(rotate[bullet.dir]*Math.PI)
-      ctx.drawImage(image, image.width - col * 14, row * 14, 14, 14, -7, -7, 14, 14)
-      ctx.restore()
-    } else {
-      ctx.fillStyle='#666'
-      ctx.fillRect(bullet.x - offsetX+(bullet.dir==1?10:5), bullet.y - offsetY + 7, bullet.dir%2==0? 5: 2, bullet.dir%2==0? 2: 5)
+  function drawItems(offsetX, offsetY) {
+    var row = 0
+    var col = 1
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i]
+      if (item.x - offsetX + 14 < -canvas.width / 4 / 2 || item.y - offsetY + 14 < -canvas.height / 4 / 2 || item.x - offsetX > canvas.width / 4 / 2 || item.y - offsetY > canvas.height / 4 / 2) continue
+      ctx.drawImage(image, image.width - col * 14, item.id * 14, 14, 14, item.x - offsetX, item.y - offsetY, 14, 14)
     }
   }
-}
 
-function drawPlayer(x, y, name, health, dir, frame, weapon, kills) {
+  function drawBullets(offsetX, offsetY) {
+    var bullets = arena.bullets
 
-  // 22 x 20, with +10 x-offset
-  var row = dir == 0 ? 1 : dir - 1
-  var col = frame == 3 ? 1 : frame
-  col += (weapon+1)*7
-  x += 10
-
-  // draw name
-  ctx.fillStyle = '#fff'
-  ctx.font = '3px sans'
-  ctx.fillText(name + ' ('+kills+')', (x - name.length + 12), y - 2)
-
-  // draw health bar
-  ctx.fillStyle = '#3a3'
-  ctx.fillRect(x + 1, y - 1, health / 5, 1)
-  ctx.fillStyle = '#a33'
-  ctx.fillRect(x + 1 + health / 5, y - 1, 100 / 5 - health / 5, 1)
-
-  ctx.save()
-  if (dir == 0) {
-    ctx.translate(44, 0)
-    ctx.scale(-1, 1)
-    x = 22 - x
+    var row = 3
+    var col = 1
+    for (var i = 0; i < bullets.length; i++) {
+      var bullet = bullets[i]
+      if (bullet.x - offsetX + 14 < -canvas.width / 4 / 2 || bullet.y - offsetY + 14 < -canvas.height / 4 / 2 || bullet.x - offsetX > canvas.width / 4 / 2 || bullet.y - offsetY > canvas.height / 4 / 2) continue
+      if (bullet.type == 0) {
+        ctx.save()
+        ctx.translate(bullet.x - offsetX + 7, bullet.y - offsetY + 7)
+        // left, up, right, down - 0, 1, 2, 3
+        var rotate = [1, -.5, 0, .5]
+        ctx.rotate(rotate[bullet.dir] * Math.PI)
+        ctx.drawImage(image, image.width - col * 14, row * 14, 14, 14, -7, -7, 14, 14)
+        ctx.restore()
+      } else {
+        ctx.fillStyle = '#666'
+        ctx.fillRect(bullet.x - offsetX + (bullet.dir == 1 ? 10 : 5), bullet.y - offsetY + 7, bullet.dir % 2 == 0 ? 5 : 2, bullet.dir % 2 == 0 ? 2 : 5)
+      }
+    }
   }
-  ctx.fillStyle = '#fff'
-  //ctx.fillRect(x,y,22,20)
 
-  //draw character
-  ctx.drawImage(image, col * 22, row * 20, 22, 20, x, y, 22, 20)
-  ctx.restore()
+  function drawPlayer(x, y, name, health, dir, frame, weapon, kills) {
 
-}
+    // 22 x 20, with +10 x-offset
+    var row = dir == 0 ? 1 : dir - 1
+    var col = frame == 3 ? 1 : frame
+    col += (weapon + 1) * 7
+    x += 10
 
-function gameState(state) {
-  arena = state
-  draw()
-}
+    // draw name
+    ctx.fillStyle = '#fff'
+    ctx.font = '3px sans'
+    ctx.fillText(name + ' (' + kills + ')', (x - name.length + 12), y - 2)
+
+    // draw health bar
+    ctx.fillStyle = '#3a3'
+    ctx.fillRect(x + 1, y - 1, health / 5, 1)
+    ctx.fillStyle = '#a33'
+    ctx.fillRect(x + 1 + health / 5, y - 1, 100 / 5 - health / 5, 1)
+
+    ctx.save()
+    if (dir == 0) {
+      ctx.translate(44, 0)
+      ctx.scale(-1, 1)
+      x = 22 - x
+    }
+    ctx.fillStyle = '#fff'
+    //ctx.fillRect(x,y,22,20)
+
+    //draw character
+    ctx.drawImage(image, col * 22, row * 20, 22, 20, x, y, 22, 20)
+    ctx.restore()
+
+  }
+
+  function gameState(state) {
+    arena = state
+    draw()
+  }
