@@ -53,7 +53,7 @@ socket.on('alert', function alert(msg) {
 })
 
 socket.on('chat', function(msg) {
-   c = $('#chatBox')
+  var c = $('#chatBox')
   c.innerHTML = c.innerHTML.replace(/<br>/g, '\n')
   c.textContent += msg + '\n'
   c.innerHTML = c.innerHTML.replace(/\n/g, '<br>')

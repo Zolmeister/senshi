@@ -49,10 +49,17 @@ io.sockets.on('connection', function (socket) {
   // on socket command (movement/attack), update game state
   socket.on('keydown', function (key) {
     if (key == 32 || key == 90) return p.attacking = 1
-    p.key = key
+    if(key > 36 && key < 41) {
+      
+      // remove key if was in list before
+      if(p.keys.indexOf(key) != -1) p.keys.splice(p.keys.indexOf(key), 1)
+      
+      // set key to first position
+      p.keys.unshift(key)
+    }
   })
   socket.on('keyup', function (key) {
-    p.key = -1
+    p.keys.splice(p.keys.indexOf(key), 1)
   })
   
   // chat
@@ -91,7 +98,7 @@ function Player(name, id) {
   // animation frame
   this.frame = 0
 
-  this.key = -1
+  this.keys = []
   this.attacking = 0
   
   while(collide(this, arena.players)) {
@@ -176,7 +183,7 @@ function physics(frame) {
   // player movement
   for (var i = 0; i < players.length; i++) {
     var player = players[i]
-    var key = player.key - 37
+    var key = (player.keys[0] || -1) - 37
     if (player.attacking) {
       if (frame % 4 == 0) {
         // maybe remove an attack frame
