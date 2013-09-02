@@ -43,11 +43,7 @@ io.sockets.on('connection', function (socket) {
 
   // on socket disconnect, kill them
   socket.on('disconnect', function () {
-    for (var i = arena.players.length - 1; i >= 0; i--) {
-      if (arena.players[i] == p) {
-        arena.players.splice(i, 1)
-      }
-    }
+    if(p) p.health = 0
   })
 
   // on socket command (movement/attack), update game state
@@ -239,6 +235,8 @@ function physics(frame) {
         items.push(item)
         io.sockets.emit('item', {index: items.length-1, val: item})
       }
+      // anounce death
+      io.sockets.emit('alert', player.name+' has been killed')
       players.splice(i, 1)
     }
   }

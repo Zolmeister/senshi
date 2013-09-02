@@ -38,8 +38,18 @@ socket.on('item', function (diff) {
 })
 
 var items = []
+var alerts = []
 socket.on('setItems', function(serverItems) {
   items = serverItems
+})
+
+socket.on('alert', function alert(msg) {
+  // split alert string into many msgs
+  while(msg) {
+    var m = msg.substr(0,27)
+    msg = msg.substring(27)
+    alerts.push({msg:m, time: 200})
+  }
 })
 
 // on keypress, send command to server
@@ -131,9 +141,22 @@ function draw() {
     //ctx.fillRect((player.x - me.x), (player.y - me.y), 10, 10)
   }
   
-  
+  drawAlerts()
 }
 
+function drawAlerts() {
+  for(var i=alerts.length-1; i>=0;i--) {
+    var alert = alerts[i]
+    alert.time--
+    if(alert.time<=0){
+      alerts.splice(i,1)
+      continue
+    }
+    ctx.font = '5px sans'
+    ctx.fillStyle = '#faa'
+    ctx.fillText(alert.msg, (400 - 300)/4, (-300+30+5*4*i)/4)
+  }
+}
 
 var random = (function rng() {
   var x = 123456789,
@@ -227,8 +250,8 @@ function drawPlayer(x, y, name, health, dir, frame, weapon) {
 
   // draw name
   ctx.fillStyle = '#fff'
-  ctx.font = '4px sans'
-  ctx.fillText(name, (x - name.length + 11), y - 2)
+  ctx.font = '3px sans'
+  ctx.fillText(name, (x - name.length + 12), y - 2)
 
   // draw health bar
   ctx.fillStyle = '#3a3'
