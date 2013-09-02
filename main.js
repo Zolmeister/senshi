@@ -46,8 +46,8 @@ socket.on('setItems', function(serverItems) {
 socket.on('alert', function alert(msg) {
   // split alert string into many msgs
   while(msg) {
-    var m = msg.substr(0,27)
-    msg = msg.substring(27)
+    var m = msg.substr(0,30)
+    msg = msg.substring(30)
     alerts.push({msg:m, time: 200})
   }
 })
@@ -141,7 +141,31 @@ function draw() {
     //ctx.fillRect((player.x - me.x), (player.y - me.y), 10, 10)
   }
   
+  drawMap(me.x, me.y)
   drawAlerts()
+}
+
+function drawMap(x, y) {
+  ctx.strokeStyle='#222'
+  ctx.strokeRect(400/4 - 31, 300/4 - 31, 30, 30)
+  
+  // draw zones
+  for(var i=0;i<3;i++) {
+    for(var j=0;j<3;j++) {
+      if(arena.killZone.x == j && arena.killZone.y == i) {
+        ctx.fillStyle = '#b00'
+        ctx.fillRect(400/4 - 31 + 10*j, 300/4 - 31 + 10*i, 10, 10)
+      } else if (arena.nextKillZone.x == j && arena.nextKillZone.y == i){
+        ctx.fillStyle = 'rgba(200,0,0,0.3)'
+        ctx.fillRect(400/4 - 31 + 10*j, 300/4 - 31 + 10*i, 10, 10)
+      }
+      ctx.fillStyle = '#fa2'
+      ctx.strokeRect(400/4 - 31 + 10*j, 300/4 - 31 + 10*i, 10, 10)
+    }
+  }
+  
+  // draw player dot
+  ctx.fillRect(400/4 - 30 + (x+400)/28, 300/4 - 30 + (y+300)/21, 1, 1)
 }
 
 function drawAlerts() {
@@ -154,7 +178,7 @@ function drawAlerts() {
     }
     ctx.font = '5px sans'
     ctx.fillStyle = '#faa'
-    ctx.fillText(alert.msg, (400 - 300)/4, (-300+30+5*4*i)/4)
+    ctx.fillText(alert.msg, (400 - 345)/4, (-300+30+5*4*i)/4)
   }
 }
 
