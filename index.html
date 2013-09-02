@@ -4,10 +4,15 @@
 <script src="http://localhost:3000/socket.io/socket.io.js"></script>
   
 <style>
+body {
+    background: #111;
+    font-family: 'sans'
+}
 #game {
   position: relative;
   margin: 0 auto;
-  width: 800px;
+  width: 1000px;
+  color: #fff;
 }
 #overlay {
   position: absolute;
@@ -20,7 +25,8 @@
 }
 #c {
   height: 600px;
-  width: 100%;
+  width: 800px;
+  float: left;
   background: #000;
 }
 #red {
@@ -31,7 +37,28 @@
 #title {
   font-size: 60px;
   font-weight: bold;
-  color: #f66;
+}
+#scores {
+  height: 300px;
+  float:right;
+  width: 200px;
+  background: #1a1a1a;
+  text-align: center;
+}
+h3 {
+  margin: 10px;
+}
+h5 {
+  margin: 8px;
+}
+#chatBox {
+  height: 272px;
+  width: 194px;
+  background: #222;
+  float: right;
+  overflow: auto;
+  font-size: 13px;
+  padding: 3px;
 }
 </style>
   
@@ -40,7 +67,7 @@
   <div id='overlay'>
     <div id='title'>戦士 - Senshi</div>
     <!-- name input -->
-    <form>
+    <form id='join'>
       Name: <input id='name'><input type='submit' value='join'>
       <div id='red'><span id='taken'>&nbsp;</span></div>
     </form>
@@ -50,7 +77,24 @@
     Attack - Spacebar or Z<br>
     <!-- about --><br>
     <a>Blog</a>, <a>Source</a>
-</div>
+  </div>
+  <div id='scores'>
+    <h3>Top 10</h3>
+    <h5>Zolmeisterrrrrr 102000</h5>
+    <h5>Zolmeisterrrrrr 102000</h5>
+    <h5>Zol 102000</h5>
+    <h5>Zolmeisterrrrrr 102000</h5>
+    <h5>Zolmeisterrrrrr 102000</h5>
+    <h5>Zolmeister 102000</h5>
+    <h5>Zolmeisterrrrrr 102000</h5>
+    <h5>Zolmeisterrrrrr 102000</h5>
+    <h5>Zolmeisterrrrrr 102000</h5>
+    <h5>Zolmeisterrrrrr 102000</h5>
+  </div>
+  <div id='chatBox'></div>
+  <form id='chatInput'>
+    <input id='msg' style='width:151px;margin:0px 2px;'><input type='submit' value='send' style='width: 45px'>
+  </form>
 </div>
 
 <script src="main.js"></script>

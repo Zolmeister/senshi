@@ -27,7 +27,7 @@ io.sockets.on('connection', function (socket) {
   
   // socket join game (gives name), adds them to arena
   socket.on('join', function (name) {
-    name = name.substr(0, 20)
+    name = name.substr(0, 17)
     if (/^[a-zA-Z]+$/.test(name) && taken.indexOf(name) == -1) {
 
       // debug
@@ -54,14 +54,25 @@ io.sockets.on('connection', function (socket) {
   socket.on('keyup', function (key) {
     p.key = -1
   })
+  
+  // chat
+  socket.on('chat', function(msg) {
+    io.sockets.emit('chat', (p && p.name || '☠')+': '+msg)
+  })
 });
 
 
 //game
 var arena = {
   players: [],
-  bullets: []
+  bullets: [],
+  highScores: []
 };
+
+// stub 10 high scores
+for(var i=0;i<10;i++) {
+  arena.highScores.push({name:'', score:''})
+}
 
 function Player(name, id) {
   this.name = name
@@ -69,6 +80,7 @@ function Player(name, id) {
   this.x = Math.floor(Math.random() * 300) + 50
   this.y = Math.floor(Math.random() * 100) + 50
   this.health = 100
+  this.kills = 0
 
   // weapons: fists, machete, bow, gun - [-1, 0, 1, 2]
   this.weapon = -1
@@ -181,6 +193,9 @@ function physics(frame) {
             var hit = collide(weapon, players.slice(0, i).concat(players.slice(i + 1)))
             if (hit) {
               hit.health -= 10
+              if(hit.health<=0) {
+                player.kills++
+              }
             }
           } else {
             arena.bullets.push(new Bullet(player.weapon - 1, player.x, player.y, player.dir, player.id))
@@ -219,6 +234,15 @@ function physics(frame) {
     if (player && bullet.shooter!=player.id) {
       // arrow does 10 dmg, bullet does 20
       player.health -= bullet.type == 0 ? 10 : 20
+      if(player.health <= 0) {
+        var id = bullet.shooter
+        for(var i=0;i<players.length;i++) {
+          if(players[i].id==id) {
+            players[i].kills++
+            break
+          }
+        }
+      }
       bullets.splice(i, 1)
     } else if(bullet.x<-400 || bullet.x>400 || bullet.y<-300 || bullet.y>300){
       bullets.splice(i, 1)
@@ -274,6 +298,20 @@ function physics(frame) {
 
         player.weapon = weapon
       }
+    }
+  }
+  
+  // update high scores
+  for(var i=0;i<players.length;i++) {
+    var highScores = arena.highScores
+    var ind = 0
+    var player = players[0]
+    while(ind<highScores.length && highScores[ind].score > player.kills*1000) {
+      ind++
+    }
+    if(ind < highScores.length) {
+      highScores.splice(ind, 0, {name: player.name, score: player.kills*1000})
+      highScores.pop()
     }
   }
 }

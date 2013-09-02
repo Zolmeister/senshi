@@ -52,6 +52,14 @@ socket.on('alert', function alert(msg) {
   }
 })
 
+socket.on('chat', function(msg) {
+   c = $('#chatBox')
+  c.innerHTML = c.innerHTML.replace(/<br>/g, '\n')
+  c.textContent += msg + '\n'
+  c.innerHTML = c.innerHTML.replace(/\n/g, '<br>')
+  c.scrollTop = 10e5
+})
+
 // on keypress, send command to server
 // left, up, right, down, space, z
 var keys = [37, 38, 39, 40, 32, 90]
@@ -72,13 +80,20 @@ function hideInstructions() {
 }
 
 function initialize() {
-  $('form').onsubmit = join
-
+  $('#join').onsubmit = join
+  $('#chatInput').onsubmit = chat
   //debug
   $('#name').value = 'Zolmeister'
   join({
     preventDefault: function () {}
   })
+}
+
+function chat(e) {
+  e.preventDefault()
+  var msg = $('#msg').value
+  $('#msg').value = ''
+  socket.emit('chat', msg)
 }
 
 function join(e) {
@@ -137,7 +152,7 @@ function draw() {
   for (var i = 0; i < players.length; i++) {
     var player = players[i]
     // draw player
-    drawPlayer(player.x - me.x - 11, player.y - me.y - 5, player.name, player.health, player.dir, player.frame, player.weapon)
+    drawPlayer(player.x - me.x - 11, player.y - me.y - 5, player.name, player.health, player.dir, player.frame, player.weapon, player.kills)
     //ctx.fillRect((player.x - me.x), (player.y - me.y), 10, 10)
   }
   
@@ -201,7 +216,7 @@ function drawTerrain(offsetX, offsetY) {
 
   for (var y = -canvas.height / 2; y < canvas.height / 2; y += 14) {
     for (var x = -canvas.width / 2; x < canvas.width / 2; x += 14) {
-      if (x - offsetX + 14 < -canvas.width / 4 / 2 || y - offsetY + 14 < -canvas.height / 4 / 2 || y - offsetY > canvas.height / 4 / 2 || y - offsetY > canvas.height / 4 / 2) continue
+      if (x - offsetX + 14 < -canvas.width / 4 / 2 || y - offsetY + 14 < -canvas.height / 4 / 2 || x - offsetX > canvas.width / 4 / 2 || y - offsetY > canvas.height / 4 / 2) continue
       ctx.drawImage(image, image.width - col * 14, map[(y + canvas.height / 2) / 14][(x + canvas.width / 2) / 14] * 14, 14, 14, x - offsetX, y - offsetY, 14, 14)
     }
   }
@@ -240,7 +255,7 @@ function drawBullets(offsetX, offsetY) {
   }
 }
 
-function drawPlayer(x, y, name, health, dir, frame, weapon) {
+function drawPlayer(x, y, name, health, dir, frame, weapon, kills) {
 
   // 22 x 20, with +10 x-offset
   var row = dir == 0 ? 1 : dir - 1
@@ -251,7 +266,7 @@ function drawPlayer(x, y, name, health, dir, frame, weapon) {
   // draw name
   ctx.fillStyle = '#fff'
   ctx.font = '3px sans'
-  ctx.fillText(name, (x - name.length + 12), y - 2)
+  ctx.fillText(name + ' ('+kills+')', (x - name.length + 12), y - 2)
 
   // draw health bar
   ctx.fillStyle = '#3a3'
