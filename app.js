@@ -60,9 +60,7 @@ io.sockets.on('connection', function (socket) {
 //game
 var arena = {
   players: [],
-  bullets: [],
-  killZone: {x: -1, y: -1},
-  nextKillZone: {x: Math.floor(Math.random()*3), y: Math.floor(Math.random()*3)}
+  bullets: []
 };
 
 function Player(name, id) {
@@ -84,7 +82,7 @@ function Player(name, id) {
   this.key = -1
   this.attacking = 0
   
-  while(collide(this, arena.players) || killZoned(this)) {
+  while(collide(this, arena.players)) {
     this.x = Math.floor(Math.random() * 300) + 50
     this.y = Math.floor(Math.random() * 100) + 50
   }
@@ -162,14 +160,6 @@ function physics(frame) {
     2: [1, 0], // right
     3: [0, 1], // down
   }
-  
-  //debug
-  keymap = {
-    0: [-5, 0], // left
-    1: [0, -5], // up
-    2: [5, 0], // right
-    3: [0, 5], // down
-  }
 
   // player movement
   for (var i = 0; i < players.length; i++) {
@@ -234,14 +224,6 @@ function physics(frame) {
       bullets.splice(i, 1)
     }
   }
-  
-  // death zone
-  for (var i = players.length - 1; i >= 0; i--) {
-    var player = players[i]
-    if(killZoned(player)) {
-      player.health = 0
-    }
-  }
 
   // player deaths
   for (var i = players.length - 1; i >= 0; i--) {
@@ -294,24 +276,9 @@ function physics(frame) {
       }
     }
   }
-  
-  // update kill zone
-  if(frame%1000==0) {
-    arena.killZone = arena.nextKillZone
-    arena.nextKillZone = {
-      x: Math.floor(Math.random()*3),
-      y: Math.floor(Math.random()*3)
-    }
-    io.sockets.emit('alert', 'The Forbidden Zone has moved')
-  }
 }
 var pHeight = 18
 var pWidth = 12;
-
-function killZoned(a) {
-  var b = arena.killZone
-  return !(a.y + pHeight < b.y || a.y > b.y*300/3 + 300/3 || a.x + pWidth < b.x || a.x > b.x*400/3 + 400/3)
-}
 
 function collide(a, bs) {
   for (var i = 0; i < bs.length; i++) {
