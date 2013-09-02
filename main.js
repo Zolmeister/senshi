@@ -29,6 +29,7 @@ socket.on('dead', drawInstructions)
 socket.on('state', gameState)
 // on item diff data, update item list
 socket.on('item', function (diff) {
+  console.log('got item diff', diff)
   if(diff.del) {
     items.splice(diff.index,1)
   } else {

@@ -232,8 +232,13 @@ function physics(frame) {
   // player deaths
   for (var i = players.length - 1; i >= 0; i--) {
     var player = players[i]
-    // TODO - drop weapon
     if (player.health <= 0) {
+      // drop weapon
+      if(player.weapon!=-1) {
+        var item = {id:player.weapon, x: player.x, y: player.y}
+        items.push(item)
+        io.sockets.emit('item', {index: items.length-1, val: item})
+      }
       players.splice(i, 1)
     }
   }
