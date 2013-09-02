@@ -36,6 +36,11 @@ socket.on('item', function (diff) {
   }
 })
 
+var items = []
+socket.on('setItems', function(serverItems) {
+  items = serverItems
+})
+
 // on keypress, send command to server
 // left, up, right, down, space, z
 var keys = [37, 38, 39, 40, 32, 90]
@@ -166,38 +171,6 @@ var map = (function generateMap() {
   return m
 })()
 
-var items = (function generateItems() {
-  var m = []
-  
-  // shift random numbers by 1 so not spawning in bush
-  random()
-  for (var y = -canvas.height / 2; y < canvas.height / 2; y += 14) {
-    for (var x = -canvas.width / 2; x < canvas.width / 2; x += 14) {
-      var rand = random()
-      if (rand > 0.9996) {
-        m.push({
-          id: 2,
-          x: x,
-          y: y
-        })
-      } else if (rand > 0.998) {
-        m.push({
-          id: 1,
-          x: x,
-          y: y
-        })
-      } else if (rand > 0.995) {
-        m.push({
-          id: 0,
-          x: x,
-          y: y
-        })
-      }
-    }
-  }
-  return m
-})();
-
 function drawTerrain(offsetX, offsetY) {
   var row = 0
   var col = 2
@@ -238,7 +211,7 @@ function drawBullets(offsetX, offsetY) {
       ctx.restore()
     } else {
       ctx.fillStyle='#666'
-      ctx.fillRect(bullet.x - offsetX, bullet.y - offsetY, bullet.dir%2==0? 5: 2, bullet.dir%2==0? 2: 5)
+      ctx.fillRect(bullet.x - offsetX+(bullet.dir==1?10:5), bullet.y - offsetY + 7, bullet.dir%2==0? 5: 2, bullet.dir%2==0? 2: 5)
     }
   }
 }

@@ -23,7 +23,8 @@ io.sockets.on('connection', function (socket) {
   var p;
 
   // on socket connect, start streaming game data to them
-
+  socket.emit('setItems', items)
+  
   // socket join game (gives name), adds them to arena
   socket.on('join', function (name) {
     name = name.substr(0, 20)
@@ -74,7 +75,7 @@ function Player(name, id) {
   this.health = 100
 
   // weapons: fists, machete, bow, gun - [-1, 0, 1, 2]
-  this.weapon = 1
+  this.weapon = -1
 
   // directions: left, up, right, down - 0, 1, 2, 3
   this.dir = 3
@@ -84,6 +85,11 @@ function Player(name, id) {
 
   this.key = -1
   this.attacking = 0
+  
+  while(collide(this, arena.players)) {
+    this.x = Math.floor(Math.random() * 300) + 50
+    this.y = Math.floor(Math.random() * 100) + 50
+  }
 }
 
 function Bullet(type, x, y, dir, shooter) {
@@ -239,7 +245,6 @@ function physics(frame) {
 
     // if colliding with item, pick it up
     if (player) {
-      console.log('pickup', item)
 
       // item is better than current
       if (player.weapon < item.id) {
