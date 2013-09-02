@@ -5,23 +5,25 @@
   
 <style>
 body {
-    background: #111;
-    font-family: 'sans'
+  background: #BDC3C7;
+  font-family: "Courier New", Courier, monospace;
+  font-weight: bold;
 }
 #game {
   position: relative;
-  margin: 0 auto;
-  width: 1000px;
-  color: #fff;
+  margin: 15px auto;
+  width: 1004px;
+  color: #C0392B;
 }
 #overlay {
   position: absolute;
   top: 100px;
-  left: 100px;
-  color: #fff;
-    
+  left: 30px;
+  color: #2C3E50;
+  background: #BDC3C7;
+  padding: 20px;
   /* debug*/
-  display: none;
+  /*display: none;*/
 }
 #c {
   height: 600px;
@@ -36,14 +38,15 @@ body {
 }
 #title {
   font-size: 60px;
-  font-weight: bold;
 }
 #scores {
+  margin: 0px 2px 1px 2px;
   height: 300px;
   float:right;
   width: 200px;
-  background: #1a1a1a;
+  background: #7F8C8D;
   text-align: center;
+  color: #fff;
 }
 h3 {
   margin: 10px;
@@ -52,13 +55,48 @@ h5 {
   margin: 8px;
 }
 #chatBox {
-  height: 272px;
+  height: 261px;
   width: 194px;
-  background: #222;
+  background: #95A5A6;
   float: right;
   overflow: auto;
   font-size: 13px;
   padding: 3px;
+  color: #fff;
+  margin: 0px 2px;
+}
+#name, #msg {
+  height: 30px;
+  padding: 8px 5px;
+  text-indent: 2px;
+  width: 206px;
+  vertical-align: middle;
+  border: 2px solid #ECF0F1;
+  font-family: "Courier New", Courier, monospace;
+}
+#name:focus, #msg:focus {
+    outline: 0;
+    border-color: #95A5A6;
+}
+#msg {
+  font-size: 13px;
+  width: 151px;
+  margin: 2px;
+}
+input[type="submit"] {
+  vertical-align: middle;
+  background: #C0392B;
+  border: 0;
+  color: #fff;
+  padding: 7px 5px;
+  font-family: "Courier New", Courier, monospace;
+  font-weight: bold;
+}
+input[type="submit"]:hover {
+  background: #E74C3C;  
+}
+#join {
+  margin:0px;
 }
 </style>
   
@@ -66,17 +104,18 @@ h5 {
   <div id='title'>戦士 - Senshi</div>
   <canvas id='c'></canvas>
   <div id='overlay'>
+    <h1>Spectating</h1>
     <!-- name input -->
     <form id='join'>
-      Name: <input id='name'><input type='submit' value='join'>
+      <input id='name' placeholder='Name'><input type='submit' value='Join'>
       <div id='red'><span id='taken'>&nbsp;</span></div>
     </form>
     <!-- controls --><br>
-    Controls:<br>
-    Movement - Arrow Keys<br>
+    <div style='font-size:21px;margin-bottom:10px;'>Controls:</div>
+    Move - Arrow Keys<br>
     Attack - Spacebar or Z<br>
-    <!-- about --><br>
-    <a>Blog</a>, <a>Source</a>
+    <!-- about --><br><br>
+    <a>About</a>
   </div>
   <div id='scores'>
     <h3>Top 10</h3>
@@ -93,7 +132,7 @@ h5 {
   </div>
   <div id='chatBox'></div>
   <form id='chatInput'>
-    <input id='msg' style='width:151px;margin:0px 2px;'><input type='submit' value='send' style='width: 45px'>
+    <input id='msg'><input type='submit' value='Send' style='width: 45px'>
   </form>
 </div>
 

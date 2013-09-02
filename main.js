@@ -49,9 +49,13 @@ socket.on('highScores', function (scores) {
 
   // This is sage because names are guarenteed to only be letters
   for (var i = 0; i < scores.length; i++) {
-    $s.innerHTML += '<h5>' + scores[i].name + ' ' + scores[i].score + '</h5>'
+    var len = (scores[i].name + scores[i].score).length
+    $s.innerHTML += '<h5>' + scores[i].name + repeat('&nbsp;', 22 - len) + scores[i].score + '</h5>'
   }
 })
+function repeat(s, n) {
+  return new Array(n+1).join(s)
+}
 socket.on('alert', function alert(msg) {
   // split alert string into many msgs
   while (msg) {
@@ -95,10 +99,10 @@ function initialize() {
   $('#join').onsubmit = join
   $('#chatInput').onsubmit = chat
   //debug
-  $('#name').value = 'Zolmeister'
-  join({
-    preventDefault: function () {}
-  })
+  //$('#name').value = 'Zolmeister'
+  //join({
+  //  preventDefault: function () {}
+  //})
 }
 
 function chat(e) {
