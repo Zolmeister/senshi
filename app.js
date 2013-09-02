@@ -181,8 +181,7 @@ function physics(frame) {
               hit.health -= 10
             }
           } else {
-            console.log('adding bullet')
-            arena.bullets.push(new Bullet(player.weapon - 2, player.x, player.y, player.dir, player.id))
+            arena.bullets.push(new Bullet(player.weapon - 1, player.x, player.y, player.dir, player.id))
           }
           player.frame++;
           player.attacking = (player.attacking + 1) % 5
@@ -212,8 +211,8 @@ function physics(frame) {
   // bullet movement/collision
   for (var i = bullets.length - 1; i >= 0; i--) {
     var bullet = bullets[i]
-    bullet.x += keymap[bullet.dir] * 2
-    bullet.y += keymap[bullet.dir] * 2
+    bullet.x += keymap[bullet.dir][0] * 2
+    bullet.y += keymap[bullet.dir][1] * 2
     var player = collide(bullet, players)
     if (player && bullet.shooter!=player.id) {
       // arrow does 10 dmg, bullet does 20

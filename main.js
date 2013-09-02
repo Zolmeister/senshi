@@ -105,21 +105,27 @@ function draw() {
     var player = players[i]
     if (player.id == id) me = player
   }
+  if(!me) return
 
   //draw terrain
   drawTerrain(me.x, me.y)
 
   // draw items
   drawItems(me.x, me.y)
+  
+  //draw bullets
+  drawBullets(me.x, me.y)
 
   //ctx.save()
   //ctx.translate(canvas.width/2, canvas.height/2)
   for (var i = 0; i < players.length; i++) {
     var player = players[i]
     // draw player
-    drawPlayer(player.x - me.x, player.y - me.y, player.name, player.health, player.dir, player.frame, player.weapon)
+    drawPlayer(player.x - me.x - 11, player.y - me.y - 5, player.name, player.health, player.dir, player.frame, player.weapon)
     //ctx.fillRect((player.x - me.x), (player.y - me.y), 10, 10)
   }
+  
+  
 }
 
 
@@ -160,8 +166,10 @@ var map = (function generateMap() {
   return m
 })()
 
-var items = (function generateMap() {
+var items = (function generateItems() {
   var m = []
+  
+  // shift random numbers by 1 so not spawning in bush
   random()
   for (var y = -canvas.height / 2; y < canvas.height / 2; y += 14) {
     for (var x = -canvas.width / 2; x < canvas.width / 2; x += 14) {
@@ -209,11 +217,29 @@ function drawItems(offsetX, offsetY) {
     var item = items[i]
     if (item.x - offsetX + 14 < -canvas.width / 4 / 2 || item.y - offsetY + 14 < -canvas.height / 4 / 2 || item.x - offsetX > canvas.width / 4 / 2 || item.y - offsetY > canvas.height / 4 / 2) continue
     ctx.drawImage(image, image.width - col * 14, item.id * 14, 14, 14, item.x - offsetX, item.y - offsetY, 14, 14)
-
   }
+}
 
-  for (var y = -canvas.height / 2; y < canvas.height / 2; y += 14) {
-    for (var x = -canvas.width / 2; x < canvas.width / 2; x += 14) {}
+function drawBullets(offsetX, offsetY) {
+  var bullets = arena.bullets
+  
+  var row = 3
+  var col = 1
+  for (var i = 0; i < bullets.length; i++) {
+    var bullet = bullets[i]
+    if (bullet.x - offsetX + 14 < -canvas.width / 4 / 2 || bullet.y - offsetY + 14 < -canvas.height / 4 / 2 || bullet.x - offsetX > canvas.width / 4 / 2 || bullet.y - offsetY > canvas.height / 4 / 2) continue
+    if(bullet.type==0){
+      ctx.save()
+      ctx.translate(bullet.x - offsetX + 7, bullet.y - offsetY + 7)
+      // left, up, right, down - 0, 1, 2, 3
+      var rotate = [1, -.5, 0, .5]
+      ctx.rotate(rotate[bullet.dir]*Math.PI)
+      ctx.drawImage(image, image.width - col * 14, row * 14, 14, 14, -7, -7, 14, 14)
+      ctx.restore()
+    } else {
+      ctx.fillStyle='#666'
+      ctx.fillRect(bullet.x - offsetX, bullet.y - offsetY, bullet.dir%2==0? 5: 2, bullet.dir%2==0? 2: 5)
+    }
   }
 }
 
