@@ -1,4 +1,4 @@
-var socket = io.connect('http://localhost'),
+var socket = io.connect(),
   $ = document.querySelector.bind(document),
   name, arena;
 
@@ -64,7 +64,7 @@ socket.on('chat', function (msg) {
   c.innerHTML = c.innerHTML.replace(/\n/g, '<br>')
   c.scrollTop = 10e5
 })
-
+var instructionsVisible = true
 // on keypress, send command to server
 // left, up, right, down, space, z
 var keys = [37, 38, 39, 40, 32, 90]
@@ -77,11 +77,18 @@ window.onkeyup = function (e) {
 
 // start by drawing instructions (+ name inputs over canvas?)
 function drawInstructions() {
-  $('#overlay').style.display = 'block'
+  if(!instructionsVisible){
+    $('#overlay').style.display = 'block'
+    instructionsVisible = true
+  }
 }
 
 function hideInstructions() {
-  $('#overlay').style.display = 'none'
+  if(instructionsVisible){
+    $('#overlay').style.display = 'none'
+    $('#red').style.visibility = 'hidden'
+    instructionsVisible = false
+  }
 }
 
 function initialize() {
@@ -138,6 +145,7 @@ function draw() {
     var player = players[i]
     if (player.n == name) me = player
   }
+  
   me = me || players[0]
   if (!me) return
 
@@ -312,6 +320,7 @@ function mergeDiff(diff) {
     arena.players.push(diff[0][i])
   }
   for(var i=0;i<diff[1].length;i++) {
+    if(arena.players[diff[1][i]].n == name) drawInstructions()
     arena.players.splice(diff[1][i], 1)
   }
   for(var i=0;i<diff[2].length;i++) {

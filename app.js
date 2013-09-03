@@ -31,8 +31,7 @@ io.sockets.on('connection', function (socket) {
     name = name.substr(0, 17)
     if (/^[a-zA-Z]+$/.test(name) && taken.indexOf(name) == -1) {
 
-      // debug
-      // taken.push(name)
+      taken.push(name)
 
       p = new Player(name, socket.id)
       arena.players.push(p)
@@ -289,9 +288,11 @@ function physics(frame) {
       
       diff[4].push(i)
       bullets.splice(i, 1)
+      arenaClone.bullets.splice(i, 1)
     } else if (bullet.x < -400 || bullet.x > 400 || bullet.y < -300 || bullet.y > 300) {
       diff[4].push(i)
       bullets.splice(i, 1)
+      arenaClone.bullets.splice(i, 1)
     }
   }
 
@@ -317,6 +318,7 @@ function physics(frame) {
           // remove the item
           items.splice(i, 1)
           diff[7].push(i)
+          arenaClone.items.splice(i, 1)
         }
 
         player.w = weapon
@@ -358,27 +360,17 @@ function physics(frame) {
 
       players.splice(i, 1)
       diff[1].push(i)
+      arenaClone.players.splice(i,1)
     }
   }
 
   
   // calculate update diffs
-  // apply death diffs to clone
   // players
-  for(var i=0;i<diff[1].length;i++) {
-    arenaClone.players.splice(i,1)
-  }
   var pDiffs = differ(players, arenaClone.players)
-  
   // bullets
-  for(var i=0;i<diff[4].length;i++) {
-    arenaClone.bullets.splice(i,1)
-  }
   var bDiffs = differ(bullets, arenaClone.bullets)
   // items
-  for(var i=0;i<diff[7].length;i++) {
-    arenaClone.items.splice(i,1)
-  }
   var iDiffs = differ(items, arenaClone.items)
   
   diff[2] = pDiffs
@@ -395,10 +387,6 @@ function physics(frame) {
 
 function differ(current, clone) {
   var diffs = []
-  if(current.length != clone.length) {
-    console.log('cur', current, 'cl', clone)
-    throw new Error("AAAH")
-}
   for (var i=0;i<current.length;i++) {
     var update = {i:i}
     var obj = current[i]
@@ -432,7 +420,7 @@ setInterval(function () {
     return total + x.length
   }, 0)) return
      
-  console.log(diff)
+  //console.log(diff)
   // send game state data
   io.sockets.emit('diffState', diff)
 }, 1000/30)
