@@ -38,7 +38,7 @@ io.sockets.on('connection', function (socket) {
       arena.players.push(p)
       diff[0].push(p)
       // socket.emit('name', name)
-      socket.emit('id', socket.id)
+      socket.emit('name', name)
       return
     }
     socket.emit('taken', name)
@@ -46,31 +46,31 @@ io.sockets.on('connection', function (socket) {
 
   // on socket disconnect, kill them
   socket.on('disconnect', function () {
-    if (p) p.health = 0
+    if (p) p.h = 0
   })
 
   // on socket command (movement/attack), update game state
   socket.on('keydown', function (key) {
     if (!p) return
 
-    if (key == 32 || key == 90) return p.attacking = 1
+    if (key == 32 || key == 90) return p.a = 1
     if (key > 36 && key < 41) {
 
       // remove key if was in list before
-      if (p.keys.indexOf(key) != -1) p.keys.splice(p.keys.indexOf(key), 1)
+      if (p.k.indexOf(key) != -1) p.k.splice(p.k.indexOf(key), 1)
 
       // set key to first position
-      p.keys.unshift(key)
+      p.k.unshift(key)
     }
   })
   socket.on('keyup', function (key) {
     if (!p) return
-    p.keys.splice(p.keys.indexOf(key), 1)
+    p.k.splice(p.k.indexOf(key), 1)
   })
 
   // chat
   socket.on('chat', function (msg) {
-    io.sockets.emit('chat', (p && p.name || '☠') + ': ' + msg)
+    io.sockets.emit('chat', (p && p.n || '☠') + ': ' + msg)
   })
 });
 
@@ -107,19 +107,19 @@ var items = (function generateMap() {
       var rand = random()
       if (rand > 0.9996) {
         m.push({
-          id: 2,
+          n: 2,
           x: x,
           y: y
         })
       } else if (rand > 0.998) {
         m.push({
-          id: 1,
+          n: 1,
           x: x,
           y: y
         })
       } else if (rand > 0.995) {
         m.push({
-          id: 0,
+          n: 0,
           x: x,
           y: y
         })
@@ -144,25 +144,32 @@ for (var i = 0; i < 10; i++) {
   })
 }
 
-function Player(name, id) {
-  this.name = name
-  this.id = id
+function Player(name) {
+  // name
+  this.n = name
   this.x = Math.floor(Math.random() * 300) + 50
   this.y = Math.floor(Math.random() * 100) + 50
-  this.health = 100
-  this.kills = 0
+  
+  // health
+  this.h = 100
+  
+  // kills
+  this.s = 0
 
   // weapons: fists, machete, bow, gun - [-1, 0, 1, 2]
-  this.weapon = -1
+  this.w = -1
 
   // directions: left, up, right, down - 0, 1, 2, 3
-  this.dir = 3
+  this.d = 3
 
   // animation frame
-  this.frame = 1
+  this.f = 1
 
-  this.keys = []
-  this.attacking = 0
+  // keys
+  this.k = []
+  
+  // attacking - bool
+  this.a = 0
 
   while (collide(this, arena.players)) {
     this.x = Math.floor(Math.random() * 300) + 50
@@ -170,13 +177,13 @@ function Player(name, id) {
   }
 }
 
-function Bullet(type, x, y, dir, shooter) {
+function Bullet(type, x, y, dir, n) {
   // types: arrow, bullet - [0, 1]
-  this.type = type
-  this.shooter = shooter
+  this.t = type
+  this.n = n
   this.x = x
   this.y = y
-  this.dir = dir
+  this.d = dir
 }
 
 // This diff will be sent and applied by the client to sync their arena
@@ -211,43 +218,43 @@ function physics(frame) {
   // player movement
   for (var i = 0; i < players.length; i++) {
     var player = players[i]
-    var key = (player.keys[0] || -1) - 37
-    if (player.attacking) {
+    var key = (player.k[0] || -1) - 37
+    if (player.a) {
       if (frame % 4 == 0) {
         // maybe remove an attack frame
-        if (player.frame == 3) {
-          player.frame++;
-          player.attacking = (player.attacking + 1) % 5
-        } else if (player.frame == 4) {
+        if (player.f == 3) {
+          player.f++;
+          player.a = (player.a + 1) % 5
+        } else if (player.f == 4) {
           // here is where we check for hit (if melee weapon)
-          if (player.weapon < 1) {
+          if (player.w < 1) {
             var weapon = {
-              x: player.x + keymap[player.dir][0] * 5,
-              y: player.y + keymap[player.dir][1] * 5
+              x: player.x + keymap[player.d][0] * 5,
+              y: player.y + keymap[player.d][1] * 5
             }
             var hit = collide(weapon, players.slice(0, i).concat(players.slice(i + 1)))
             if (hit) {
-              hit.health -= 10
-              if (hit.health <= 0) {
-                player.kills++
+              hit.h -= 10
+              if (hit.h <= 0) {
+                player.s++
               }
             }
           } else {
-            var bullet = new Bullet(player.weapon - 1, player.x, player.y, player.dir, player.id)
+            var bullet = new Bullet(player.w - 1, player.x, player.y, player.d, player.n)
             arena.bullets.push(bullet)
             diff[3].push(bullet)
             arenaClone.bullets.push(bullet)
           }
-          player.frame++;
-          player.attacking = (player.attacking + 1) % 5
+          player.f++;
+          player.a = (player.a + 1) % 5
         } else {
-          player.frame = 3
-          player.attacking = (player.attacking + 1) % 5
+          player.f = 3
+          player.a = (player.a + 1) % 5
         }
       }
     } else if (keymap[key]) {
       if (frame % 6 == 0) {
-        player.frame = (player.frame + 1) % 4
+        player.f = (player.f + 1) % 4
       }
       player.x += keymap[key][0]
       player.y += keymap[key][1]
@@ -255,26 +262,26 @@ function physics(frame) {
         player.x -= keymap[key][0]
         player.y -= keymap[key][1]
       }
-      player.dir = key;
+      player.d = key;
     } else {
-      player.frame = 1
+      player.f = 1
     }
   }
 
   // bullet movement/collision
   for (var i = bullets.length - 1; i >= 0; i--) {
     var bullet = bullets[i]
-    bullet.x += keymap[bullet.dir][0] * 2
-    bullet.y += keymap[bullet.dir][1] * 2
+    bullet.x += keymap[bullet.d][0] * 2
+    bullet.y += keymap[bullet.d][1] * 2
     var player = collide(bullet, players)
-    if (player && bullet.shooter != player.id) {
+    if (player && bullet.n != player.n) {
       // arrow does 10 dmg, bullet does 20
-      player.health -= bullet.type == 0 ? 10 : 20
-      if (player.health <= 0) {
-        var id = bullet.shooter
+      player.h -= bullet.t == 0 ? 10 : 20
+      if (player.h <= 0) {
+        var id = bullet.n
         for (var i = 0; i < players.length; i++) {
-          if (players[i].id == id) {
-            players[i].kills++
+          if (players[i].n == id) {
+            players[i].s++
             break
           }
         }
@@ -297,14 +304,14 @@ function physics(frame) {
     if (player) {
 
       // item is better than current
-      if (player.weapon < item.id) {
-        var weapon = item.id
+      if (player.w < item.n) {
+        var weapon = item.n
 
         // pick up the item
-        if (player.weapon != -1) {
+        if (player.w != -1) {
 
           // drop current weapon
-          item.id = player.weapon
+          item.n = player.w
         } else {
 
           // remove the item
@@ -312,7 +319,7 @@ function physics(frame) {
           diff[7].push(i)
         }
 
-        player.weapon = weapon
+        player.w = weapon
       }
     }
   }
@@ -320,11 +327,11 @@ function physics(frame) {
   // player deaths
   for (var i = players.length - 1; i >= 0; i--) {
     var player = players[i]
-    if (player.health <= 0) {
+    if (player.h <= 0) {
       // drop weapon
-      if (player.weapon != -1) {
+      if (player.w != -1) {
         var item = {
-          id: player.weapon,
+          n: player.w,
           x: player.x,
           y: player.y
         }
@@ -333,13 +340,13 @@ function physics(frame) {
         diff[6].push(item)
       }
       // anounce death
-      io.sockets.emit('alert', player.name + ' has been killed')
+      io.sockets.emit('alert', player.n + ' has been killed')
 
       // update high scores
       // TODO - only send if top 10 change
       highScores.push({
-        name: player.name,
-        score: player.kills * 1000
+        name: player.n,
+        score: player.s * 1000
       })
 
       highScores.sort(function (a, b) {
@@ -397,7 +404,7 @@ function differ(current, clone) {
     var obj = current[i]
     var cloned = clone[i]
     for(var key in obj) {
-      if(key=='keys') continue
+      if(key=='k') continue
       if(obj[key]!=cloned[key]) update[key] = obj[key]
     }
     if(Object.keys(update).length>1) diffs.push(update)

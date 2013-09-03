@@ -1,6 +1,6 @@
 var socket = io.connect('http://localhost'),
   $ = document.querySelector.bind(document),
-  id, arena;
+  name, arena;
 
 canvas = $('#c')
 canvas.width = 800
@@ -19,8 +19,8 @@ ctx.scale(4, 4)
 
 socket.on('taken', taken)
 // on id, set id for user tracking purposes
-socket.on('id', function (d) {
-  id = d
+socket.on('name', function (n) {
+  name = n
   hideInstructions()
 })
 // on death, draw instructios
@@ -136,7 +136,7 @@ function draw() {
   ctx.fillStyle = '#fff'
   for (var i = 0; i < players.length; i++) {
     var player = players[i]
-    if (player.id == id) me = player
+    if (player.n == name) me = player
   }
   me = me || players[0]
   if (!me) return
@@ -155,7 +155,7 @@ function draw() {
   for (var i = 0; i < players.length; i++) {
     var player = players[i]
     // draw player
-    drawPlayer(player.x - me.x - 11, player.y - me.y - 5, player.name, player.health, player.dir, player.frame, player.weapon, player.kills)
+    drawPlayer(player.x - me.x - 11, player.y - me.y - 5, player.n, player.h, player.d, player.f, player.w, player.s)
     //ctx.fillRect((player.x - me.x), (player.y - me.y), 10, 10)
   }
 
@@ -232,7 +232,7 @@ function drawItems(offsetX, offsetY) {
   for (var i = 0; i < items.length; i++) {
     var item = items[i]
     if (item.x - offsetX + 14 < -canvas.width / 4 / 2 || item.y - offsetY + 14 < -canvas.height / 4 / 2 || item.x - offsetX > canvas.width / 4 / 2 || item.y - offsetY > canvas.height / 4 / 2) continue
-    ctx.drawImage(image, image.width - col * 14, item.id * 14, 14, 14, item.x - offsetX, item.y - offsetY, 14, 14)
+    ctx.drawImage(image, image.width - col * 14, item.n * 14, 14, 14, item.x - offsetX, item.y - offsetY, 14, 14)
   }
 }
 
@@ -244,17 +244,17 @@ function drawBullets(offsetX, offsetY) {
   for (var i = 0; i < bullets.length; i++) {
     var bullet = bullets[i]
     if (bullet.x - offsetX + 14 < -canvas.width / 4 / 2 || bullet.y - offsetY + 14 < -canvas.height / 4 / 2 || bullet.x - offsetX > canvas.width / 4 / 2 || bullet.y - offsetY > canvas.height / 4 / 2) continue
-    if (bullet.type == 0) {
+    if (bullet.t == 0) {
       ctx.save()
       ctx.translate(bullet.x - offsetX + 7, bullet.y - offsetY + 7)
       // left, up, right, down - 0, 1, 2, 3
       var rotate = [1, -.5, 0, .5]
-      ctx.rotate(rotate[bullet.dir] * Math.PI)
+      ctx.rotate(rotate[bullet.d] * Math.PI)
       ctx.drawImage(image, image.width - col * 14, row * 14, 14, 14, -7, -7, 14, 14)
       ctx.restore()
     } else {
       ctx.fillStyle = '#666'
-      ctx.fillRect(bullet.x - offsetX + (bullet.dir == 1 ? 10 : 5), bullet.y - offsetY + 7, bullet.dir % 2 == 0 ? 5 : 2, bullet.dir % 2 == 0 ? 2 : 5)
+      ctx.fillRect(bullet.x - offsetX + (bullet.d == 1 ? 10 : 5), bullet.y - offsetY + 7, bullet.d % 2 == 0 ? 5 : 2, bullet.d % 2 == 0 ? 2 : 5)
     }
   }
 }
