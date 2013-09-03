@@ -87,6 +87,7 @@ function hideInstructions() {
   if(instructionsVisible){
     $('#overlay').style.display = 'none'
     $('#red').style.visibility = 'hidden'
+    $('#name').style.borderColor = '#ECF0F1'
     instructionsVisible = false
   }
 }
@@ -114,15 +115,15 @@ function join(e) {
   if (/^[a-zA-Z]+$/.test(name)) {
     console.log('joining as', name)
     socket.emit('join', name)
-    //taken(name)
     return
   }
   badName(name)
 }
 
-function taken(name) {
+function taken(res) {
   $('#red').style.visibility = 'visible'
-  $('#taken').innerText = name + ' is dead or taken'
+  $('#name').style.borderColor = '#C0392B'
+  $('#taken').innerText = res.name + ' is ' + (res.dead ? 'dead' : 'taken')
 }
 
 function badName(name) {

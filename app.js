@@ -18,6 +18,7 @@ app.listen(3000)
 
 // list of taken names
 var taken = []
+var dead = []
 io.set('log level', 2)
 io.sockets.on('connection', function (socket) {
   var p;
@@ -29,18 +30,17 @@ io.sockets.on('connection', function (socket) {
   // socket join game (gives name), adds them to arena
   socket.on('join', function (name) {
     name = name.substr(0, 17)
-    if (/^[a-zA-Z]+$/.test(name) && taken.indexOf(name) == -1) {
-
-      taken.push(name)
-
-      p = new Player(name, socket.id)
-      arena.players.push(p)
-      diff[0].push(p)
-      // socket.emit('name', name)
-      socket.emit('name', name)
+    if (!/^[a-zA-Z]+$/.test(name) || taken.indexOf(name) != -1 || dead.indexOf(name) != -1) {
+      socket.emit('taken', {dead: dead.indexOf(name) != -1, name: name})
       return
     }
-    socket.emit('taken', name)
+    taken.push(name)
+
+    p = new Player(name, socket.id)
+    arena.players.push(p)
+    diff[0].push(p)
+    // socket.emit('name', name)
+    socket.emit('name', name)
   })
 
   // on socket disconnect, kill them
@@ -358,6 +358,8 @@ function physics(frame) {
       // send high score list
       io.sockets.emit('highScores', highScores.slice(0, 10))
 
+      taken.splice(taken.indexOf(player.n), 1)
+      dead.push(player.n)
       players.splice(i, 1)
       diff[1].push(i)
       arenaClone.players.splice(i,1)
