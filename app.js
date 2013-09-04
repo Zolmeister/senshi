@@ -158,7 +158,7 @@ function Player(name) {
   this.s = 0
 
   // weapons: fists, machete, bow, gun - [-1, 0, 1, 2]
-  this.w = 2
+  this.w = -1
 
   // directions:
   // left, up/left, up, up/right, right, right/down, down, down/left
@@ -422,7 +422,7 @@ function differ(current, clone) {
     var cloned = clone[i]
     for(var key in obj) {
       if(key=='k') continue
-      if(obj[key]!=cloned[key]) update[key] = obj[key]
+      if(obj[key]!=cloned[key]) update[key] = +obj[key].toFixed(2)
     }
     if(Object.keys(update).length>1) diffs.push(update)
   }
