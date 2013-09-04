@@ -77,14 +77,14 @@ window.onkeyup = function (e) {
 
 // start by drawing instructions (+ name inputs over canvas?)
 function drawInstructions() {
-  if(!instructionsVisible){
+  if (!instructionsVisible) {
     $('#overlay').style.display = 'block'
     instructionsVisible = true
   }
 }
 
 function hideInstructions() {
-  if(instructionsVisible){
+  if (instructionsVisible) {
     $('#overlay').style.display = 'none'
     $('#red').style.visibility = 'hidden'
     $('#name').style.borderColor = '#ECF0F1'
@@ -96,10 +96,10 @@ function initialize() {
   $('#join').onsubmit = join
   $('#chatInput').onsubmit = chat
   //debug
-  //$('#name').value = 'Zolmeister'
-  //join({
-  //  preventDefault: function () {}
-  //})
+  $('#name').value = 'Zolmeister'
+  join({
+    preventDefault: function () {}
+  })
 }
 
 function chat(e) {
@@ -146,7 +146,7 @@ function draw() {
     var player = players[i]
     if (player.n == name) me = player
   }
-  
+
   me = me || players[0]
   if (!me) return
 
@@ -271,7 +271,8 @@ function drawBullets(offsetX, offsetY) {
 function drawPlayer(x, y, name, health, dir, frame, weapon, kills) {
 
   // 22 x 20, with +10 x-offset
-  var row = dir == 0 ? 1 : dir - 1
+  var rowDir = [1, 0, 0, 0, 1, 2, 2, 2]
+  var row = rowDir[dir]
   var col = frame == 3 ? 1 : frame
   col += (weapon + 1) * 7
   x += 10
@@ -288,13 +289,36 @@ function drawPlayer(x, y, name, health, dir, frame, weapon, kills) {
   ctx.fillRect(x + 1 + health / 5, y - 1, 100 / 5 - health / 5, 1)
 
   ctx.save()
-  if (dir == 0) {
+  if (dir == 0 || dir == 1 || dir == 7) {
     ctx.translate(44, 0)
     ctx.scale(-1, 1)
     x = 22 - x
   }
   ctx.fillStyle = '#fff'
   //ctx.fillRect(x,y,22,20)
+  var tanAngle = Math.tan(Math.PI / 4)
+  var pMap = {
+    1: {
+      x: 304,
+      y: 310 + 24
+    },
+    3: {
+      x: 402,
+      y: 292
+    },
+    5: {
+      x: 400,
+      y: 310
+    },
+    7: {
+      x: 304,
+      y: 310 - 42
+    }
+  }
+
+  if (pMap[dir]) {
+    ctx.setTransform(3.8, (dir == 1 || dir == 5 ? -1 : 1) * tanAngle, 0, 4, pMap[dir].x, pMap[dir].y)
+  }
 
   //draw character
   ctx.drawImage(image, col * 22, row * 20, 22, 20, x, y, 22, 20)
@@ -317,53 +341,53 @@ function setState(state) {
 function mergeDiff(diff) {
 
   // players
-  for(var i=0;i<diff[0].length;i++) {
+  for (var i = 0; i < diff[0].length; i++) {
     arena.players.push(diff[0][i])
   }
-  for(var i=0;i<diff[1].length;i++) {
-    if(arena.players[diff[1][i]].n == name) drawInstructions()
+  for (var i = 0; i < diff[1].length; i++) {
+    if (arena.players[diff[1][i]].n == name) drawInstructions()
     arena.players.splice(diff[1][i], 1)
   }
-  for(var i=0;i<diff[2].length;i++) {
+  for (var i = 0; i < diff[2].length; i++) {
     var update = diff[2][i]
     var index = update.i
     delete update.i
-    for(var key in update) {
+    for (var key in update) {
       arena.players[index][key] = update[key]
     }
   }
-  
+
   // bullets
-  for(var i=0;i<diff[3].length;i++) {
+  for (var i = 0; i < diff[3].length; i++) {
     arena.bullets.push(diff[3][i])
   }
-  for(var i=0;i<diff[4].length;i++) {
+  for (var i = 0; i < diff[4].length; i++) {
     arena.bullets.splice(diff[4][i], 1)
   }
-  for(var i=0;i<diff[5].length;i++) {
+  for (var i = 0; i < diff[5].length; i++) {
     var update = diff[5][i]
     var index = update.i
     delete update.i
-    for(var key in update) {
+    for (var key in update) {
       arena.bullets[index][key] = update[key]
     }
   }
-  
+
   // items
-  for(var i=0;i<diff[6].length;i++) {
+  for (var i = 0; i < diff[6].length; i++) {
     arena.items.push(diff[6][i])
   }
-  for(var i=0;i<diff[7].length;i++) {
+  for (var i = 0; i < diff[7].length; i++) {
     arena.items.splice(diff[7][i])
   }
-  for(var i=0;i<diff[8].length;i++) {
+  for (var i = 0; i < diff[8].length; i++) {
     var update = diff[8][i]
     var index = update.i
     delete update.i
-    for(var key in update) {
+    for (var key in update) {
       arena.items[index][key] = update[key]
     }
   }
-  
+
   draw()
 }

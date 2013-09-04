@@ -30,10 +30,12 @@ io.sockets.on('connection', function (socket) {
   // socket join game (gives name), adds them to arena
   socket.on('join', function (name) {
     name = name.substr(0, 17)
-    if (!/^[a-zA-Z]+$/.test(name) || taken.indexOf(name) != -1 || dead.indexOf(name) != -1) {
+    //debug
+    /*if (!/^[a-zA-Z]+$/.test(name) || taken.indexOf(name) != -1 || dead.indexOf(name) != -1) {
       socket.emit('taken', {dead: dead.indexOf(name) != -1, name: name})
       return
-    }
+    }*/
+    
     taken.push(name)
 
     p = new Player(name, socket.id)
@@ -158,8 +160,10 @@ function Player(name) {
   // weapons: fists, machete, bow, gun - [-1, 0, 1, 2]
   this.w = -1
 
-  // directions: left, up, right, down - 0, 1, 2, 3
-  this.d = 3
+  // directions:
+  // left, up/left, up, up/right, right, right/down, down, down/left
+  // 0,    1,       2,  3,        4,     5,          6,     7
+  this.d = 6
 
   // animation frame
   this.f = 1
@@ -207,17 +211,40 @@ function physics(frame) {
   var arenaClone = clone(arena)
   
   // dir: [delta x, delta y]
+  var sqrt2 = Math.sqrt(2)
   var keymap = {
     0: [-2, 0], // left
-    1: [0, -2], // up
-    2: [2, 0], // right
-    3: [0, 2], // down
+    1: [-sqrt2, -sqrt2], // up/left
+    2: [0, -2], // up
+    3: [sqrt2, -sqrt2], // up/right
+    4: [2, 0], // right
+    5: [sqrt2, sqrt2], // down/right
+    6: [0, 2], // down
+    7: [-sqrt2, sqrt2] // down/left
   }
 
   // player movement
   for (var i = 0; i < players.length; i++) {
     var player = players[i]
-    var key = (player.k[0] || -1) - 37
+    var key;
+    var key1 = (player.k[0] || -1) - 37
+    var key2 = (player.k[1] || -1) -37
+    if(!keymap[key2]) key = key1 * 2
+    else {
+      // adding works for up/left, up/right, down/right
+      // does not work for opposite or down/left
+      
+      // opposite
+      if((key1-key2)%2==0){
+        key = -1
+      } else  if(key1==0 && key2==3 || key1==3 && key2==0) {
+        // down/left
+        key = 7
+      } else {
+        key = key1 + key2
+      }
+    }
+
     if (player.a) {
       if (frame % 4 == 0) {
         // maybe remove an attack frame
