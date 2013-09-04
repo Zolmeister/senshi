@@ -256,14 +256,22 @@ function drawBullets(offsetX, offsetY) {
     if (bullet.t == 0) {
       ctx.save()
       ctx.translate(bullet.x - offsetX + 7, bullet.y - offsetY + 7)
-      // left, up, right, down - 0, 1, 2, 3
-      var rotate = [1, -.5, 0, .5]
+      // left, up/left, up, up/right, right, down/right, down, down/left 
+      // 0,    1,       2,  3,        4,     5,          6,    7
+      var rotate = [1, -.75, -.5, -.25, 0, .25, .5, .75]
       ctx.rotate(rotate[bullet.d] * Math.PI)
       ctx.drawImage(image, image.width - col * 14, row * 14, 14, 14, -7, -7, 14, 14)
       ctx.restore()
     } else {
+      ctx.save()
+      ctx.translate(bullet.x - offsetX + 7 - (bullet.d == 2 ? -5 : 0), bullet.y - offsetY + 7)
+      
+      var rotate = [1, -.75, -.5, -.25, 0, .25, .5, .75]
+      ctx.rotate(rotate[bullet.d] * Math.PI)
       ctx.fillStyle = '#666'
-      ctx.fillRect(bullet.x - offsetX + (bullet.d == 1 ? 10 : 5), bullet.y - offsetY + 7, bullet.d % 2 == 0 ? 5 : 2, bullet.d % 2 == 0 ? 2 : 5)
+      ctx.fillRect(0, 0, 5, 2)
+      //ctx.fillRect(bullet.x - offsetX + (bullet.d == 1 ? 10 : 5), bullet.y - offsetY + 7, bullet.d % 2 == 0 ? 5 : 2, bullet.d % 2 == 0 ? 2 : 5)
+      ctx.restore()
     }
   }
 }

@@ -158,7 +158,7 @@ function Player(name) {
   this.s = 0
 
   // weapons: fists, machete, bow, gun - [-1, 0, 1, 2]
-  this.w = -1
+  this.w = 2
 
   // directions:
   // left, up/left, up, up/right, right, right/down, down, down/left
