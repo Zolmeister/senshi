@@ -16,6 +16,8 @@ ctx.mozImageSmoothingEnabled = false
 ctx.translate(canvas.width / 2, canvas.height / 2)
 ctx.scale(4, 4)
 //ctx.scale(2,2)
+ctx.font = '3px sans'
+ctx.textAlign='center'
 
 socket.on('taken', taken)
 // on id, set id for user tracking purposes
@@ -96,7 +98,7 @@ function initialize() {
   $('#join').onsubmit = join
   $('#chatInput').onsubmit = chat
   //debug
-  $('#name').value = 'Zolmeister'
+  $('#name').value = 'a'
   join({
     preventDefault: function () {}
   })
@@ -285,24 +287,25 @@ function drawPlayer(x, y, name, health, dir, frame, weapon, kills) {
   col += (weapon + 1) * 7
   x += 10
 
+  // draw health bar
+  var hp = health/6
+  ctx.fillStyle = '#3a3'
+  ctx.fillRect(x + 2, y - 1, hp, 1)
+  ctx.fillStyle = '#a33'
+  ctx.fillRect(x + hp, y - 1, 100 / 6 - hp, 1)
+
   // draw name
   ctx.fillStyle = '#fff'
-  ctx.font = '3px sans'
-  ctx.fillText(name + ' (' + kills + ')', (x - name.length + 12), y - 2)
-
-  // draw health bar
-  ctx.fillStyle = '#3a3'
-  ctx.fillRect(x + 1, y - 1, health / 5, 1)
-  ctx.fillStyle = '#a33'
-  ctx.fillRect(x + 1 + health / 5, y - 1, 100 / 5 - health / 5, 1)
-
+  ctx.fillText(name + ' (' + kills + ')', x + 11, y - 2)
+  
   ctx.save()
   if (dir == 0 || dir == 1 || dir == 7) {
     ctx.translate(44, 0)
     ctx.scale(-1, 1)
     x = 22 - x
   }
-  ctx.fillStyle = '#fff'
+  
+  //ctx.fillStyle = '#fff'
   //ctx.fillRect(x,y,22,20)
   var tanAngle = Math.tan(Math.PI / 4)
   var pMap = {
