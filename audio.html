@@ -1,0 +1,184 @@
+<button onclick='play()'>Play</button>
+<button onclick='clearNotes()'>Clear</button>
+<table id='grid'></table>
+<style>
+  .note {
+    width: 24px;
+    height: 20px;
+    background: #c1c1c1;
+    cursor: pointer;
+  }
+</style>
+<script src='libs.js'></script>
+<script>
+  var $ = document.querySelectorAll.bind(document)
+
+  var grid = $('#grid')[0]
+  var gridText = ''
+
+  var scale = [174.61, 196, 220, 261.63, 293.66, 349.23, 392, 440]
+  var song = JSON.parse(localStorage.save) || Array.apply([], new Array(20)).map(function() {
+    return new Array(scale.length)
+  })
+
+
+  for (var y = 0; y < scale.length; y++) {
+    var freq = scale[y]
+    gridText += '<tr>'
+    gridText += '<td>' + freq + 'Hz</td>'
+    for (var x = 0; x < song.length; x++) {
+      gridText += '<td class="note" data-freq="' + freq + '" data-x="' + x + '" data-y="' + y + '">' + x + '</td>'
+    }
+    gridText += '</tr>'
+  }
+  grid.innerHTML += gridText
+
+  var $notes = Array.apply([], $('.note'))
+
+  // apply bindings
+  $notes.forEach(function(el) {
+    var self = this,
+      x = el.getAttribute('data-x'),
+      y = el.getAttribute('data-y');
+
+    if (song[x][y]) {
+      el.style.backgroundColor = '#666'
+    }
+
+    el.onclick = function(e) {
+      var selected = song[x][y]
+      setNote(x, y, selected ? 0 : +this.getAttribute('data-freq'))
+      el.style.backgroundColor = !selected ? '#666' : '#c1c1c1'
+    }
+
+    Events.on(x + ':' + y + ':highlight', function() {
+      el.style.backgroundColor = '#2b2ba7'
+    })
+
+    function reset() {
+      el.style.backgroundColor = song[x][y] ? '#666' : '#c1c1c1'
+    }
+    Events.on(x + ':' + y + ':unhighlight', reset)
+    Events.on('reset', reset)
+  });
+
+  function setNote(x, y, hz) {
+    song[x][y] = hz
+    save()
+  }
+
+  function save() {
+    localStorage.save = JSON.stringify(song)
+  }
+
+  function clearNotes() {
+    song = Array.apply([], new Array(song.length)).map(function() {
+      return new Array(song[0].length)
+    })
+    Events.emit('reset')
+    save()
+  }
+
+  var note = -1
+  var playing = false;
+
+  function play() {
+
+    if (!playing) {
+      playRealNotes()
+      playing = true
+    }
+
+    // animation
+    for (var i = 0; i < song[0].length; i++) {
+      Events.emit(note + ':' + i + ':highlight')
+      setTimeout((function(note, i) {
+        return function() {
+          Events.emit(note + ':' + i + ':unhighlight')
+        }
+      })(note, i), 250 / 2)
+    }
+
+    note++
+    if (note === song.length) {
+      playing = false
+      return note = -1
+    }
+    setTimeout(play, 250 / 2)
+  }
+
+  function playRealNotes() {
+    var tracks = [];
+    var noteMap = JSON.parse(JSON.stringify(song))
+
+    // merge down to reduce track count
+    for (var x = 0; x < noteMap.length; x++) {
+      var flatNotes = noteMap[x].filter(function(note) {
+        return !!note
+      })
+      tracks.push(flatNotes.concat(Array.apply([], new Array(noteMap[x].length - flatNotes.length)).map(function() {
+        return 0
+      })))
+    }
+
+    tracks = zip(tracks).filter(function(arr) {
+      return arr.some(function(note) {
+        return !!note
+      })
+    })
+
+    function sawtooth(x) {
+      var pi = Math.PI
+      var tn = Math.ceil((x + pi) / (2 * pi));
+      var y = ((x - tn * 2 * pi) + 2 * pi) / pi;
+      return y
+    }
+    
+    var players = []
+    for (var i = 0; i < tracks.length; i++) {
+      var track = tracks[i]
+      var bytes = track.reduce(function(trackStr, freq) {
+        var samples = Math.floor(11025 / 2)
+        for (var s = samples; s--;) {
+          var byte;
+          /* Square wave */
+          //byte = Math.round(Math.sin(s/44100*2*Math.PI*freq)) * Math.min((samples-s)/83,s/samples)*127+128
+
+          /* sine wave */
+          //byte = Math.sin(s/44100*2*Math.PI*freq) * Math.min((samples-s)/83,s/samples)*127+128
+
+          /* base square wave */
+          //byte = Math.round(Math.sin(s/44100*1*Math.PI*freq)) * Math.min((samples-s)/83,s/samples)*127+128
+
+          /* base sine wave */
+          //byte = Math.sin(s/44100*1*Math.PI*freq) * Math.min((samples-s)/83,s/samples)*127+128
+
+          /* sawtooth wave */
+          //byte = sawtooth(s/44100*freq) * Math.min((samples - s) / 83, s / samples) * 127 + 128
+          
+          /* reverse sawtooth wave */
+          //byte = Math.abs(s%(freq)-freq)/freq * Math.min((samples - s) / 83, s / samples) * 127 + 128
+          
+          /* triangle wave - utter crap */
+          //byte = Math.abs(s%(freq*2)-freq)/freq/2 * Math.min((samples - s) / 83, s / samples) * 127 + 128
+          
+
+
+
+          trackStr += String.fromCharCode(byte);
+        }
+        return trackStr
+      }, '')
+
+      var player = new Audio('data:audio/wav;base64,UklGRjUrAABXQVZFZm10IBAAAAA\
+BAAEARKwAAESsAAABAAgAZGF0YREr' + btoa('\5\0' + bytes))
+      //player.volume = 1
+      players.push(player)
+    }
+
+    players.map(function(p) {
+      p.play()
+    })
+
+  }
+</script>
