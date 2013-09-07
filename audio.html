@@ -142,16 +142,10 @@
         for (var s = samples; s--;) {
           var byte;
           /* Square wave */
-          //byte = Math.round(Math.sin(s/44100*2*Math.PI*freq)) * Math.min((samples-s)/83,s/samples)*127+128
+          //byte = (Math.sin(s/44100*2*Math.PI*freq)>0 ? 1 : -1) * Math.min((samples-s)/83,s/samples)*127+128
 
           /* sine wave */
           //byte = Math.sin(s/44100*2*Math.PI*freq) * Math.min((samples-s)/83,s/samples)*127+128
-
-          /* base square wave */
-          //byte = Math.round(Math.sin(s/44100*1*Math.PI*freq)) * Math.min((samples-s)/83,s/samples)*127+128
-
-          /* base sine wave */
-          //byte = Math.sin(s/44100*1*Math.PI*freq) * Math.min((samples-s)/83,s/samples)*127+128
 
           /* sawtooth wave */
           //byte = sawtooth(s/44100*freq) * Math.min((samples - s) / 83, s / samples) * 127 + 128
