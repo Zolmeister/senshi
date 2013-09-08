@@ -1,9 +1,11 @@
+var msgpack = require('./msgpack')
 var app = require('http').createServer(function (req, res) {
   if (req.url.indexOf('main.js') !== -1) return res.end(fs.readFileSync('main.js'))
   if (req.url.indexOf('player.png') !== -1) return res.end(fs.readFileSync('player.png'))
   if (req.url.indexOf('libs.js') !== -1) return res.end(fs.readFileSync('libs.js'))
   if (req.url.indexOf('audio.js') !== -1) return res.end(fs.readFileSync('audio.js'))
   if (req.url.indexOf('audio.html') !== -1) return res.end(fs.readFileSync('audio.html'))
+  if (req.url.indexOf('msgpack.js') !== -1) return res.end(fs.readFileSync('msgpack.js'))
   res.end(fs.readFileSync('index.html'))
   /* -- note, this is premature optimization --
   function (err, data) {
@@ -174,8 +176,8 @@ for (var i = 0; i < 10; i++) {
 function Player(name) {
   // name
   this.n = name
-  this.x = -270//Math.floor(Math.random() * 600) - 300
-  this.y = -190 //Math.floor(Math.random() * 400) - 200
+  this.x = 0//Math.floor(Math.random() * 600) - 300
+  this.y = 0 //Math.floor(Math.random() * 400) - 200
   
   // health
   this.h = 100
@@ -484,5 +486,19 @@ setInterval(function () {
      
   //console.log(diff)
   // send game state data
+ 
+  var found = false
+  diff = diff.filter(function(arr){
+    if(arr.length>0){
+      found = true
+    } else if (found){
+      return false
+    }
+    return true
+  })
+  
+  var packed = msgpack.encode(diff)
+  //console.log(packed, packed.toString('base64'), packed.length)
+  //console.log(JSON.stringify(diff))
   io.sockets.emit('diffState', diff)
 }, 1000/30)

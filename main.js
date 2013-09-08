@@ -377,7 +377,13 @@ function setState(state) {
 // diff[6-8] = items
 
 function mergeDiff(diff) {
-
+  /*console.log(atob(diff))
+  msgpack.decode(btoa(diff))*/
+  for(var i=0;i<9;i++){
+    if(!diff[i]) diff[i]=[]
+  }
+  //console.log(diff)
+  
   // players
   for (var i = 0; i < diff[0].length; i++) {
     arena.players.push(diff[0][i])
@@ -416,7 +422,7 @@ function mergeDiff(diff) {
     arena.items.push(diff[6][i])
   }
   for (var i = 0; i < diff[7].length; i++) {
-    arena.items.splice(diff[7][i])
+    arena.items.splice(diff[7][i], 1)
   }
   for (var i = 0; i < diff[8].length; i++) {
     var update = diff[8][i]
