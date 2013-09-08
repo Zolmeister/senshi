@@ -136,13 +136,13 @@ var items = (function generateMap() {
           x: x,
           y: y
         })
-      } else if (rand > 0.998) {
+      } else if (rand > 0.943 && rand < 0.945) {
         m.push({
           n: 1,
           x: x,
           y: y
         })
-      } else if (rand > 0.995) {
+      } else if (rand > 0.930 && rand<0.935) {
         m.push({
           n: 0,
           x: x,
@@ -172,8 +172,8 @@ for (var i = 0; i < 10; i++) {
 function Player(name) {
   // name
   this.n = name
-  this.x = Math.floor(Math.random() * 300) + 50
-  this.y = Math.floor(Math.random() * 100) + 50
+  this.x = 0//Math.floor(Math.random() * 600) - 300
+  this.y = 0 //Math.floor(Math.random() * 400) - 200
   
   // health
   this.h = 100
