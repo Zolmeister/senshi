@@ -1,4 +1,3 @@
-var msgpack = require('./msgpack')
 var app = require('http').createServer(function (req, res) {
   if (req.url.indexOf('main.js') !== -1) return res.end(fs.readFileSync('main.js'))
   if (req.url.indexOf('player.png') !== -1) return res.end(fs.readFileSync('player.png'))
@@ -40,7 +39,7 @@ io.sockets.on('connection', function (socket) {
       socket.emit('taken', {dead: dead.indexOf(name) != -1, name: name})
       return
     }*/
-    
+
     taken.push(name)
 
     p = new Player(name, socket.id)
@@ -106,14 +105,14 @@ var map = (function generateMap() {
       var rand = random()
       if (rand > 0.99) {
         temp.push(3)
-      } else if(rand>0.98){
+      } else if (rand > 0.98) {
         // non-traversable stump
         temp.push(4)
-      } else if(rand>0.92){
+      } else if (rand > 0.92) {
         temp.push(2)
-      } else if(rand>0.82){
+      } else if (rand > 0.82) {
         temp.push(6)
-      }else if (rand > 0.72) {
+      } else if (rand > 0.72) {
         temp.push(5)
       } else if (rand > 0.62) {
         temp.push(1)
@@ -146,7 +145,7 @@ var items = (function generateMap() {
           x: x,
           y: y
         })
-      } else if (rand > 0.930 && rand<0.935) {
+      } else if (rand > 0.930 && rand < 0.935) {
         m.push({
           n: 0,
           x: x,
@@ -176,12 +175,12 @@ for (var i = 0; i < 10; i++) {
 function Player(name) {
   // name
   this.n = name
-  this.x = 0//Math.floor(Math.random() * 600) - 300
+  this.x = 0 //Math.floor(Math.random() * 600) - 300
   this.y = 0 //Math.floor(Math.random() * 400) - 200
-  
+
   // health
   this.h = 100
-  
+
   // kills
   this.s = 0
 
@@ -198,7 +197,7 @@ function Player(name) {
 
   // keys
   this.k = []
-  
+
   // attacking - bool
   this.a = 0
 
@@ -237,7 +236,7 @@ function physics(frame) {
   var bullets = arena.bullets
   var items = arena.items
   var arenaClone = clone(arena)
-  
+
   // dir: [delta x, delta y]
   var sqrt2 = Math.sqrt(2)
   var keymap = {
@@ -256,16 +255,16 @@ function physics(frame) {
     var player = players[i]
     var key;
     var key1 = (player.k[0] || -1) - 37
-    var key2 = (player.k[1] || -1) -37
-    if(!keymap[key2]) key = key1 * 2
+    var key2 = (player.k[1] || -1) - 37
+    if (!keymap[key2]) key = key1 * 2
     else {
       // adding works for up/left, up/right, down/right
       // does not work for opposite or down/left
-      
+
       // opposite
-      if((key1-key2)%2==0){
+      if ((key1 - key2) % 2 == 0) {
         key = -1
-      } else  if(key1==0 && key2==3 || key1==3 && key2==0) {
+      } else if (key1 == 0 && key2 == 3 || key1 == 3 && key2 == 0) {
         // down/left
         key = 7
       } else {
@@ -274,7 +273,7 @@ function physics(frame) {
     }
 
     if (player.a) {
-      if (frame % 4 == 0) {
+      if (frame % 3 == 0) {
         // maybe remove an attack frame
         if (player.f == 3) {
           player.f++;
@@ -312,7 +311,7 @@ function physics(frame) {
       }
       player.x += keymap[key][0]
       player.y += keymap[key][1]
-      var outsideMap = player.x < -400 || player.x > (400 - 16) || player.y < -300 || player.y > (300 - 18) 
+      var outsideMap = player.x < -400 || player.x > (400 - 16) || player.y < -300 || player.y > (300 - 18)
       var collidePlayer = collide(player, players.slice(0, i).concat(players.slice(i + 1)))
       var collideTerrain = collideMap(player.x, player.y)
       if (outsideMap || collidePlayer || collideTerrain) {
@@ -343,7 +342,7 @@ function physics(frame) {
           }
         }
       }
-      
+
       diff[4].push(i)
       bullets.splice(i, 1)
       arenaClone.bullets.splice(i, 1)
@@ -420,11 +419,11 @@ function physics(frame) {
       dead.push(player.n)
       players.splice(i, 1)
       diff[1].push(i)
-      arenaClone.players.splice(i,1)
+      arenaClone.players.splice(i, 1)
     }
   }
 
-  
+
   // calculate update diffs
   // players
   var pDiffs = differ(players, arenaClone.players)
@@ -432,11 +431,11 @@ function physics(frame) {
   var bDiffs = differ(bullets, arenaClone.bullets)
   // items
   var iDiffs = differ(items, arenaClone.items)
-  
+
   diff[2] = pDiffs
   diff[5] = bDiffs
   diff[8] = iDiffs
-  
+
   var t = diff
   diff = Array.apply([], new Array(9)).map(function () {
     return []
@@ -446,26 +445,29 @@ function physics(frame) {
 }
 
 function collideMap(x, y) {
-   return map[Math.round((y+2+300)/14)][Math.round((x+2+400)/14)] == 4 ? true : false
+  return map[Math.round((y + 2 + 300) / 14)][Math.round((x + 2 + 400) / 14)] == 4 ? true : false
 }
 
 function differ(current, clone) {
   var diffs = []
-  for (var i=0;i<current.length;i++) {
-    var update = {i:i}
+  for (var i = 0; i < current.length; i++) {
+    var update = {
+      i: i
+    }
     var obj = current[i]
     var cloned = clone[i]
-    for(var key in obj) {
-      if(key=='k') continue
-      if(obj[key]!=cloned[key]) update[key] = +obj[key].toFixed(2)
+    for (var key in obj) {
+      if (key == 'k') continue
+      if (obj[key] != cloned[key]) update[key] = +obj[key].toFixed(2)
     }
-    if(Object.keys(update).length>1) diffs.push(update)
+    if (Object.keys(update).length > 1) diffs.push(update)
   }
   return diffs
 }
 
 var pHeight = 18
 var pWidth = 12;
+
 function collide(a, bs) {
   for (var i = 0; i < bs.length; i++) {
     var b = bs[i]
@@ -478,27 +480,20 @@ var frame = 0
 setInterval(function () {
   // update game state
   var diff = physics(++frame)
-  
+
   // don't send if empty
-  if(!diff.reduce(function(total, x) {
+  if (!diff.reduce(function (total, x) {
     return total + x.length
   }, 0)) return
-     
+
   //console.log(diff)
   // send game state data
- 
+
   var found = false
-  diff = diff.filter(function(arr){
-    if(arr.length>0){
-      found = true
-    } else if (found){
-      return false
-    }
-    return true
-  })
-  
-  var packed = msgpack.encode(diff)
-  //console.log(packed, packed.toString('base64'), packed.length)
-  //console.log(JSON.stringify(diff))
-  io.sockets.emit('diffState', diff)
-}, 1000/30)
+  var i = diff.length-1
+  while (diff[i] && diff[i].length == 0) {
+    diff.splice(i,1)
+  }
+
+  io.sockets.emit('message', diff)
+}, 1000 / 30)

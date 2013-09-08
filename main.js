@@ -29,7 +29,7 @@ socket.on('name', function (n) {
 socket.on('dead', drawInstructions)
 // on game data, display on canvas
 socket.on('setState', setState)
-socket.on('diffState', mergeDiff)
+socket.on('message', mergeDiff)
 // on item diff data, update item list
 
 var alerts = []
@@ -377,12 +377,9 @@ function setState(state) {
 // diff[6-8] = items
 
 function mergeDiff(diff) {
-  /*console.log(atob(diff))
-  msgpack.decode(btoa(diff))*/
   for(var i=0;i<9;i++){
     if(!diff[i]) diff[i]=[]
   }
-  //console.log(diff)
   
   // players
   for (var i = 0; i < diff[0].length; i++) {
