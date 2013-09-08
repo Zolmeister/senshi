@@ -96,12 +96,33 @@ var random = (function rng() {
   }
 })()
 
-// stub to run through RNG
-for (var y = -600 / 2; y < 600 / 2; y += 14) {
-  for (var x = -800 / 2; x < 800 / 2; x += 14) {
-    random()
+var map = (function generateMap() {
+  var m = []
+  for (var y = -600 / 2; y < 600 / 2; y += 14) {
+    var temp = []
+    for (var x = -800 / 2; x < 800 / 2; x += 14) {
+      var rand = random()
+      if (rand > 0.99) {
+        temp.push(3)
+      } else if(rand>0.98){
+        // non-traversable stump
+        temp.push(4)
+      } else if(rand>0.92){
+        temp.push(2)
+      } else if(rand>0.82){
+        temp.push(6)
+      }else if (rand > 0.72) {
+        temp.push(5)
+      } else if (rand > 0.62) {
+        temp.push(1)
+      } else {
+        temp.push(0)
+      }
+    }
+    m.push(temp)
   }
-}
+  return m
+})();
 
 var items = (function generateMap() {
   var m = []
@@ -177,7 +198,7 @@ function Player(name) {
   // attacking - bool
   this.a = 0
 
-  while (collide(this, arena.players)) {
+  while (collide(this, arena.players) || collideMap(this.x, this.y)) {
     this.x = Math.floor(Math.random() * 300) + 50
     this.y = Math.floor(Math.random() * 100) + 50
   }
@@ -287,7 +308,10 @@ function physics(frame) {
       }
       player.x += keymap[key][0]
       player.y += keymap[key][1]
-      if (player.x < -400 || player.x > (400 - 16) || player.y < -300 || player.y > (300 - 18) || collide(player, players.slice(0, i).concat(players.slice(i + 1)))) {
+      var outsideMap = player.x < -400 || player.x > (400 - 16) || player.y < -300 || player.y > (300 - 18) 
+      var collidePlayer = collide(player, players.slice(0, i).concat(players.slice(i + 1)))
+      var collideTerrain = collideMap(player.x, player.y)
+      if (outsideMap || collidePlayer || collideTerrain) {
         player.x -= keymap[key][0]
         player.y -= keymap[key][1]
       }
@@ -415,6 +439,10 @@ function physics(frame) {
   })
 
   return t
+}
+
+function collideMap(x, y) {
+   return map[Math.round((y+2+300)/14)][Math.round((x+2+400)/14)] == 4 ? true : false
 }
 
 function differ(current, clone) {

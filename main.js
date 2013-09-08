@@ -215,9 +215,15 @@ var map = (function generateMap() {
       var rand = random()
       if (rand > 0.99) {
         temp.push(3)
-      } else if (rand > 0.95) {
+      } else if(rand>0.98){
+        temp.push(4)
+      } else if(rand>0.92){
         temp.push(2)
-      } else if (rand > 0.8) {
+      } else if(rand>0.82){
+        temp.push(6)
+      }else if (rand > 0.72) {
+        temp.push(5)
+      } else if (rand > 0.62) {
         temp.push(1)
       } else {
         temp.push(0)
@@ -229,13 +235,16 @@ var map = (function generateMap() {
 })();
 
 function drawTerrain(offsetX, offsetY) {
-  var row = 0
-  var col = 2
-
   for (var y = -canvas.height / 2; y < canvas.height / 2; y += 14) {
     for (var x = -canvas.width / 2; x < canvas.width / 2; x += 14) {
+      var row = map[(y + canvas.height / 2) / 14][(x + canvas.width / 2) / 14]
+      var col = image.width - 2 * 14
+      if(row > 3) {
+        row = row - 4
+        col -= 14
+      }
       if (x - offsetX + 14 < -canvas.width / 4 / 2 || y - offsetY + 14 < -canvas.height / 4 / 2 || x - offsetX > canvas.width / 4 / 2 || y - offsetY > canvas.height / 4 / 2) continue
-      ctx.drawImage(image, image.width - col * 14, map[(y + canvas.height / 2) / 14][(x + canvas.width / 2) / 14] * 14, 14, 14, x - offsetX, y - offsetY, 14, 14)
+      ctx.drawImage(image, col, row * 14, 14, 14, x - offsetX, y - offsetY, 14, 14)
     }
   }
 }
