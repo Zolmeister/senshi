@@ -1,18 +1,18 @@
 var fs = require('fs')
 
-
-
-var app = require('http').createServer(function (req, res) {
-  var files = {
-  'main':fs.readFileSync('main.js'),
+var files = {
+  'main': fs.readFileSync('main.js'),
   'player': fs.readFileSync('player.png'),
-  'libs':fs.readFileSync('libs.js'),
-  'audio.js':fs.readFileSync('audio.js'),
-  'audio.html':fs.readFileSync('audio.html'),
+  'libs': fs.readFileSync('libs.js'),
+  'audio.js': fs.readFileSync('audio.js'),
+  'audio.html': fs.readFileSync('audio.html'),
   '': fs.readFileSync('index.html')
 }
-  for(var key in files) {
-    if(req.url.indexOf(key) != -1) return res.end(files[key])
+
+var app = require('http').createServer(function (req, res) {
+
+  for (var key in files) {
+    if (req.url.indexOf(key) != -1) return res.end(files[key])
   }
 }),
   io = require('socket.io').listen(app);
@@ -34,10 +34,13 @@ io.sockets.on('connection', function (socket) {
   socket.on('join', function (name) {
     name = name.substr(0, 17)
     //debug
-//    if (!/^[a-zA-Z]+$/.test(name) || taken.indexOf(name) != -1 || dead.indexOf(name) != -1) {
-//      socket.emit('taken', {dead: dead.indexOf(name) != -1, name: name})
-//      return
-//    }
+    if (!/^[a-zA-Z]+$/.test(name) || taken.indexOf(name) != -1 || dead.indexOf(name) != -1) {
+      socket.emit('taken', {
+        dead: dead.indexOf(name) != -1,
+        name: name
+      })
+      return
+    }
 
     taken.push(name)
 
@@ -174,8 +177,8 @@ for (var i = 0; i < 10; i++) {
 function Player(name) {
   // name
   this.n = name
-  this.x = Math.random()*50 //Math.floor(Math.random() * 600) - 300
-  this.y = Math.random()*50 //Math.floor(Math.random() * 400) - 200
+  this.x = Math.floor(Math.random() * 600) - 300
+  this.y = Math.floor(Math.random() * 400) - 200
 
   // health
   this.h = 100
@@ -201,8 +204,8 @@ function Player(name) {
   this.a = 0
 
   while (collide(this, arena.players) || collideMap(this.x, this.y)) {
-    this.x = Math.floor(Math.random() * 300) + 50
-    this.y = Math.floor(Math.random() * 100) + 50
+    this.x = Math.floor(Math.random() * 600) - 300
+    this.y = Math.floor(Math.random() * 400) - 200
   }
 }
 
@@ -489,9 +492,9 @@ setInterval(function () {
   // send game state data
 
   var found = false
-  var i = diff.length-1
+  var i = diff.length - 1
   while (diff[i] && diff[i].length == 0) {
-    diff.splice(i,1)
+    diff.splice(i, 1)
   }
 
   io.sockets.emit('message', diff)
