@@ -1,6 +1,9 @@
 var fs = require('fs')
 
-var files = {
+
+
+var app = require('http').createServer(function (req, res) {
+  var files = {
   'main':fs.readFileSync('main.js'),
   'player': fs.readFileSync('player.png'),
   'libs':fs.readFileSync('libs.js'),
@@ -8,8 +11,6 @@ var files = {
   'audio.html':fs.readFileSync('audio.html'),
   '': fs.readFileSync('index.html')
 }
-
-var app = require('http').createServer(function (req, res) {
   for(var key in files) {
     if(req.url.indexOf(key) != -1) return res.end(files[key])
   }
@@ -33,10 +34,10 @@ io.sockets.on('connection', function (socket) {
   socket.on('join', function (name) {
     name = name.substr(0, 17)
     //debug
-    if (!/^[a-zA-Z]+$/.test(name) || taken.indexOf(name) != -1 || dead.indexOf(name) != -1) {
-      socket.emit('taken', {dead: dead.indexOf(name) != -1, name: name})
-      return
-    }
+//    if (!/^[a-zA-Z]+$/.test(name) || taken.indexOf(name) != -1 || dead.indexOf(name) != -1) {
+//      socket.emit('taken', {dead: dead.indexOf(name) != -1, name: name})
+//      return
+//    }
 
     taken.push(name)
 
@@ -173,8 +174,8 @@ for (var i = 0; i < 10; i++) {
 function Player(name) {
   // name
   this.n = name
-  this.x = 0 //Math.floor(Math.random() * 600) - 300
-  this.y = 0 //Math.floor(Math.random() * 400) - 200
+  this.x = Math.random()*50 //Math.floor(Math.random() * 600) - 300
+  this.y = Math.random()*50 //Math.floor(Math.random() * 400) - 200
 
   // health
   this.h = 100

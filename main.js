@@ -102,10 +102,10 @@ function initialize() {
   initAudio()
 
   //debug
-  //$('#name').value = 'a'
-  //join({
-  // preventDefault: function () {}
-  //})
+  $('#name').value = 'a'
+  join({
+   preventDefault: function () {}
+  })
 }
 
 function chat(e) {
@@ -334,31 +334,18 @@ function drawPlayer(x, y, name, health, dir, frame, weapon, kills) {
   //ctx.fillStyle = '#fff'
   //ctx.fillRect(x,y,22,20)
   var tanAngle = Math.tan(Math.PI / 4)
-  var pMap = {
-    1: {
-      x: 304,
-      y: 310 + 24
-    },
-    3: {
-      x: 402,
-      y: 292
-    },
-    5: {
-      x: 400,
-      y: 310
-    },
-    7: {
-      x: 304,
-      y: 310 - 42
-    }
-  }
-
-  if (pMap[dir]) {
-    ctx.setTransform(3.8, (dir == 1 || dir == 5 ? -1 : 1) * tanAngle, 0, 4, pMap[dir].x, pMap[dir].y)
-  }
-
+  
   //draw character
-  ctx.drawImage(image, col * 22, row * 20, 22, 20, x, y, 22, 20)
+  ctx.translate(x+11,y+10)
+  
+  if (dir%2==1) {
+    if(dir==1 || dir==7)
+    ctx.setTransform(3.8, (dir == 1 || dir == 5 ? -1 : 1) * tanAngle, 0, 4, 400-x*4+22*4+11*4, 300+y*4+10*4)
+    else
+      ctx.setTransform(3.8, (dir == 5 ? -1 : 1) * tanAngle, 0, 4, 400+x*4+11*4, 300+y*4+10*4)
+  }
+
+  ctx.drawImage(image, col * 22, row * 20, 22, 20, -11, -10, 22, 20)
   ctx.restore()
 
 }
