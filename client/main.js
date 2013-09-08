@@ -16,8 +16,7 @@ ctx.mozImageSmoothingEnabled = false
 ctx.translate(canvas.width / 2, canvas.height / 2)
 ctx.scale(4, 4)
 //ctx.scale(2,2)
-ctx.font = '3px sans'
-ctx.textAlign = 'center'
+ctx.font = '3px sans-serif'
 
 socket.on('taken', taken)
 // on id, set id for user tracking purposes
@@ -102,10 +101,10 @@ function initialize() {
   initAudio()
 
   //debug
-  //$('#name').value = 'a'
-  //join({
-  // preventDefault: function () {}
-  //})
+//  $('#name').value = 'a'
+//  join({
+//   preventDefault: function () {}
+//  })
 }
 
 function chat(e) {
@@ -185,7 +184,8 @@ function drawAlerts() {
       alerts.splice(i, 1)
       continue
     }
-    ctx.font = '5px sans'
+    ctx.textAlign = 'left'
+    ctx.font = '5px sans-serif'
     ctx.fillStyle = '#faa'
     ctx.fillText(alert.msg, (400 - 300) / 4, (-300 + 30 + 5 * 4 * i) / 4)
   }
@@ -248,7 +248,7 @@ function drawTerrain(offsetX, offsetY) {
         row = map[yy][xx]
       } else {
         row = 3
-        col-=14
+        col-= 14
       }
 
       if (row > 3) {
@@ -257,7 +257,56 @@ function drawTerrain(offsetX, offsetY) {
       }
 
       if (x - offsetX + 14 < -canvas.width / 4 / 2 || y - offsetY + 14 < -canvas.height / 4 / 2 || x - offsetX > canvas.width / 4 / 2 || y - offsetY > canvas.height / 4 / 2) continue
-      ctx.drawImage(image, col, row * 14, 14, 14, x - offsetX, y - offsetY, 14, 14)
+      
+      // draw edges
+      // top
+      col-=14
+      // translation x, y, rot, row
+      var t = [0, 0, 0, row]
+      
+      ctx.save()
+      if(yy == -1 && xx>=0 && xx<map[0].length) {
+        t =[1, 1, -1, 0]
+      }
+      // bottom
+      else if(yy == map.length && xx>=0 && xx<map[0].length) {
+        t[3] = 0
+      }
+      // left
+      else if(xx == -1 && yy>=0 && yy<map.length) {
+        t = [1, 0, .5, 0]
+      }
+      //right
+      else if(xx == map[0].length && yy>=0 && yy<map.length) {
+        t = [0, 1, -.5, 0]
+      } 
+      // top left
+      else if(xx==-1 && yy==-1) {
+        t = [1, 0, .5, 1]
+      }
+      // top right
+      else if(xx==map[0].length && yy==-1) {
+        t = [1, 1, -1, 1]
+      }
+      // bottom right
+      else if(xx==map[0].length && yy==map.length) {
+        t = [0, 1, -.5, 1]
+      }
+      // bottom left
+      else if(xx==-1 && yy==map.length) {
+        t[3] = 1
+      }
+      // default
+      else {
+        col+=14
+      }
+      
+      row = t[3]
+      ctx.translate(x-offsetX+14*t[0], y-offsetY+14*t[1])
+      ctx.rotate(t[2]*Math.PI)
+      ctx.drawImage(image, col, row * 14, 14, 14, 0, 0, 14, 14)
+      ctx.restore()
+     
     }
   }
 }
@@ -314,13 +363,15 @@ function drawPlayer(x, y, name, health, dir, frame, weapon, kills) {
   x += 10
 
   // draw health bar
-  var hp = health / 6
+  var hp = Math.ceil(health / 6)
   ctx.fillStyle = '#3a3'
   ctx.fillRect(x + 2, y - 1, hp, 1)
   ctx.fillStyle = '#a33'
-  ctx.fillRect(x + hp, y - 1, 100 / 6 - hp, 1)
+  ctx.fillRect(x + hp + 2, y - 1, Math.ceil(100 / 6) - hp, 1)
 
   // draw name
+  ctx.textAlign = 'center'
+  ctx.font = '3px sans-serif'
   ctx.fillStyle = '#fff'
   ctx.fillText(name + ' (' + kills + ')', x + 11, y - 2)
 
@@ -334,31 +385,18 @@ function drawPlayer(x, y, name, health, dir, frame, weapon, kills) {
   //ctx.fillStyle = '#fff'
   //ctx.fillRect(x,y,22,20)
   var tanAngle = Math.tan(Math.PI / 4)
-  var pMap = {
-    1: {
-      x: 304,
-      y: 310 + 24
-    },
-    3: {
-      x: 402,
-      y: 292
-    },
-    5: {
-      x: 400,
-      y: 310
-    },
-    7: {
-      x: 304,
-      y: 310 - 42
-    }
-  }
-
-  if (pMap[dir]) {
-    ctx.setTransform(3.8, (dir == 1 || dir == 5 ? -1 : 1) * tanAngle, 0, 4, pMap[dir].x, pMap[dir].y)
-  }
-
+  
   //draw character
-  ctx.drawImage(image, col * 22, row * 20, 22, 20, x, y, 22, 20)
+  ctx.translate(x+11,y+10)
+  
+  if (dir%2==1) {
+    if(dir==1 || dir==7)
+    ctx.setTransform(3.8, (dir == 1 || dir == 5 ? -1 : 1) * tanAngle, 0, 4, 400-x*4+22*4+11*4, 300+y*4+10*4)
+    else
+      ctx.setTransform(3.8, (dir == 5 ? -1 : 1) * tanAngle, 0, 4, 400+x*4+11*4, 300+y*4+10*4)
+  }
+
+  ctx.drawImage(image, col * 22, row * 20, 22, 20, -11, -10, 22, 20)
   ctx.restore()
 
 }
