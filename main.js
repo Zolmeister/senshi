@@ -215,13 +215,13 @@ var map = (function generateMap() {
       var rand = random()
       if (rand > 0.99) {
         temp.push(3)
-      } else if(rand>0.98){
+      } else if (rand > 0.98) {
         temp.push(4)
-      } else if(rand>0.92){
+      } else if (rand > 0.92) {
         temp.push(2)
-      } else if(rand>0.82){
+      } else if (rand > 0.82) {
         temp.push(6)
-      }else if (rand > 0.72) {
+      } else if (rand > 0.72) {
         temp.push(5)
       } else if (rand > 0.62) {
         temp.push(1)
@@ -235,14 +235,27 @@ var map = (function generateMap() {
 })();
 
 function drawTerrain(offsetX, offsetY) {
-  for (var y = -canvas.height / 2; y < canvas.height / 2; y += 14) {
-    for (var x = -canvas.width / 2; x < canvas.width / 2; x += 14) {
-      var row = map[(y + canvas.height / 2) / 14][(x + canvas.width / 2) / 14]
+  for (var y = -canvas.height / 2 - 6 * 14; y < canvas.height / 2 + 6 * 14; y += 14) {
+    for (var x = -canvas.width / 2 - 8 * 14; x < canvas.width / 2 + 8 * 14; x += 14) {
+      
+      var row;
       var col = image.width - 2 * 14
-      if(row > 3) {
+      
+      var xx = (x + canvas.width / 2) / 14
+      var yy = (y + canvas.height / 2) / 14
+      
+      if(map[yy] && typeof map[yy][xx] !='undefined'){
+        row = map[yy][xx]
+      } else {
+        row = 3
+        col-=14
+      }
+
+      if (row > 3) {
         row = row - 4
         col -= 14
       }
+
       if (x - offsetX + 14 < -canvas.width / 4 / 2 || y - offsetY + 14 < -canvas.height / 4 / 2 || x - offsetX > canvas.width / 4 / 2 || y - offsetY > canvas.height / 4 / 2) continue
       ctx.drawImage(image, col, row * 14, 14, 14, x - offsetX, y - offsetY, 14, 14)
     }
@@ -419,37 +432,38 @@ function mergeDiff(diff) {
 
 var player;
 var loadingAudio = false
-function initAudio() {
-  // audio
-  $('#audio').style.color = localStorage.volume == '0' ? '#000' : '#C0392B'
-  if (localStorage.volume == '0') return
-  loadingAudio = true
-  var blob = new Blob([$('#audioworker').textContent], {
-    type: "text/javascript"
-  });
-  worker = new Worker(window.URL.createObjectURL(blob))
 
-  worker.onmessage = function (e) {
-    var val = e.data.setAudio
-    player = new Audio('data:audio/wav;base64,UklGRjUrAABXQVZFZm10IBAAAAABAAEARKwAAESsAAABAAgAZGF0YREr' + btoa(val))
-    player.addEventListener('ended', function () {
-      this.currentTime = 0
-      this.play()
-    }, false)
-    player.play()
-    loadingAudio = false
-    
-    localStorage.volume = localStorage.volume || 0.5
-    player.volume = +localStorage.volume
-    $('#audio').style.color = player.volume == '0' ? '#000' : '#C0392B'
+  function initAudio() {
+    // audio
+    $('#audio').style.color = localStorage.volume == '0' ? '#000' : '#C0392B'
+    if (localStorage.volume == '0') return
+    loadingAudio = true
+    var blob = new Blob([$('#audioworker').textContent], {
+      type: "text/javascript"
+    });
+    worker = new Worker(window.URL.createObjectURL(blob))
+
+    worker.onmessage = function (e) {
+      var val = e.data.setAudio
+      player = new Audio('data:audio/wav;base64,UklGRjUrAABXQVZFZm10IBAAAAABAAEARKwAAESsAAABAAgAZGF0YREr' + btoa(val))
+      player.addEventListener('ended', function () {
+        this.currentTime = 0
+        this.play()
+      }, false)
+      player.play()
+      loadingAudio = false
+
+      localStorage.volume = localStorage.volume || 0.5
+      player.volume = +localStorage.volume
+      $('#audio').style.color = player.volume == '0' ? '#000' : '#C0392B'
+    }
   }
-}
 
-function toggleAudio() {
-  if(loadingAudio) return
-  $('#audio').style.color = $('#audio').style.color !=='rgb(0, 0, 0)' ? '#000' : '#C0392B'
-  localStorage.volume = localStorage.volume != '0' ? 0 : 0.5
-  if (!player) return initAudio()
-  player.volume = +localStorage.volume
-  
-}
+  function toggleAudio() {
+    if (loadingAudio) return
+    $('#audio').style.color = $('#audio').style.color !== 'rgb(0, 0, 0)' ? '#000' : '#C0392B'
+    localStorage.volume = localStorage.volume != '0' ? 0 : 0.5
+    if (!player) return initAudio()
+    player.volume = +localStorage.volume
+
+  }

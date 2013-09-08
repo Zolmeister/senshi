@@ -127,6 +127,8 @@ var map = (function generateMap() {
 var items = (function generateMap() {
   var m = []
   random()
+  random()
+  random()
   for (var y = -600 / 2; y < 600 / 2; y += 14) {
     for (var x = -800 / 2; x < 800 / 2; x += 14) {
       var rand = random()
@@ -172,8 +174,8 @@ for (var i = 0; i < 10; i++) {
 function Player(name) {
   // name
   this.n = name
-  this.x = 0//Math.floor(Math.random() * 600) - 300
-  this.y = 0 //Math.floor(Math.random() * 400) - 200
+  this.x = -270//Math.floor(Math.random() * 600) - 300
+  this.y = -190 //Math.floor(Math.random() * 400) - 200
   
   // health
   this.h = 100
