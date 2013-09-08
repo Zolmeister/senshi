@@ -1,6 +1,9 @@
 var app = require('http').createServer(function (req, res) {
   if (req.url.indexOf('main.js') !== -1) return res.end(fs.readFileSync('main.js'))
   if (req.url.indexOf('player.png') !== -1) return res.end(fs.readFileSync('player.png'))
+  if (req.url.indexOf('libs.js') !== -1) return res.end(fs.readFileSync('libs.js'))
+  if (req.url.indexOf('audio.js') !== -1) return res.end(fs.readFileSync('audio.js'))
+  if (req.url.indexOf('audio.html') !== -1) return res.end(fs.readFileSync('audio.html'))
   res.end(fs.readFileSync('index.html'))
   /* -- note, this is premature optimization --
   function (err, data) {

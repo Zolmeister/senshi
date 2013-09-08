@@ -17,7 +17,7 @@ ctx.translate(canvas.width / 2, canvas.height / 2)
 ctx.scale(4, 4)
 //ctx.scale(2,2)
 ctx.font = '3px sans'
-ctx.textAlign='center'
+ctx.textAlign = 'center'
 
 socket.on('taken', taken)
 // on id, set id for user tracking purposes
@@ -78,6 +78,7 @@ window.onkeyup = function (e) {
 }
 
 // start by drawing instructions (+ name inputs over canvas?)
+
 function drawInstructions() {
   if (!instructionsVisible) {
     $('#overlay').style.display = 'block'
@@ -97,6 +98,9 @@ function hideInstructions() {
 function initialize() {
   $('#join').onsubmit = join
   $('#chatInput').onsubmit = chat
+  $('#audio').onclick = toggleAudio
+  initAudio()
+
   //debug
   $('#name').value = 'a'
   join({
@@ -267,7 +271,7 @@ function drawBullets(offsetX, offsetY) {
     } else {
       ctx.save()
       ctx.translate(bullet.x - offsetX + 7 - (bullet.d == 2 ? -5 : 0), bullet.y - offsetY + 7)
-      
+
       var rotate = [1, -.75, -.5, -.25, 0, .25, .5, .75]
       ctx.rotate(rotate[bullet.d] * Math.PI)
       ctx.fillStyle = '#666'
@@ -288,7 +292,7 @@ function drawPlayer(x, y, name, health, dir, frame, weapon, kills) {
   x += 10
 
   // draw health bar
-  var hp = health/6
+  var hp = health / 6
   ctx.fillStyle = '#3a3'
   ctx.fillRect(x + 2, y - 1, hp, 1)
   ctx.fillStyle = '#a33'
@@ -297,14 +301,14 @@ function drawPlayer(x, y, name, health, dir, frame, weapon, kills) {
   // draw name
   ctx.fillStyle = '#fff'
   ctx.fillText(name + ' (' + kills + ')', x + 11, y - 2)
-  
+
   ctx.save()
   if (dir == 0 || dir == 1 || dir == 7) {
     ctx.translate(44, 0)
     ctx.scale(-1, 1)
     x = 22 - x
   }
-  
+
   //ctx.fillStyle = '#fff'
   //ctx.fillRect(x,y,22,20)
   var tanAngle = Math.tan(Math.PI / 4)
@@ -349,6 +353,7 @@ function setState(state) {
 // diff[2] = player updates (i:index, updated attrs)
 // diff[3-5] = bullets
 // diff[6-8] = items
+
 function mergeDiff(diff) {
 
   // players
@@ -401,4 +406,41 @@ function mergeDiff(diff) {
   }
 
   draw()
+}
+
+var player;
+var loadingAudio = false
+function initAudio() {
+  // audio
+  $('#audio').style.color = localStorage.volume == '0' ? '#000' : '#C0392B'
+  if (localStorage.volume == '0') return
+  loadingAudio = true
+  var blob = new Blob([$('#audioworker').textContent], {
+    type: "text/javascript"
+  });
+  worker = new Worker(window.URL.createObjectURL(blob))
+
+  worker.onmessage = function (e) {
+    var val = e.data.setAudio
+    player = new Audio('data:audio/wav;base64,UklGRjUrAABXQVZFZm10IBAAAAABAAEARKwAAESsAAABAAgAZGF0YREr' + btoa(val))
+    player.addEventListener('ended', function () {
+      this.currentTime = 0
+      this.play()
+    }, false)
+    player.play()
+    loadingAudio = false
+    
+    localStorage.volume = localStorage.volume || 0.5
+    player.volume = +localStorage.volume
+    $('#audio').style.color = player.volume == '0' ? '#000' : '#C0392B'
+  }
+}
+
+function toggleAudio() {
+  if(loadingAudio) return
+  $('#audio').style.color = $('#audio').style.color !=='rgb(0, 0, 0)' ? '#000' : '#C0392B'
+  localStorage.volume = localStorage.volume != '0' ? 0 : 0.5
+  if (!player) return initAudio()
+  player.volume = +localStorage.volume
+  
 }
