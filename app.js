@@ -6,6 +6,7 @@ var files = {
   'libs': fs.readFileSync('libs.js'),
   'audio.js': fs.readFileSync('audio.js'),
   'audio.html': fs.readFileSync('audio.html'),
+  'ping': 'pong',
   '': fs.readFileSync('index.html')
 }
 
@@ -17,7 +18,7 @@ var app = require('http').createServer(function (req, res) {
 }),
   io = require('socket.io').listen(app);
 
-app.listen(3000)
+app.listen(process.env.PORT || 3000)
 
 // list of taken names
 var taken = []
